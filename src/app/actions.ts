@@ -29,9 +29,9 @@ export async function sendVerificationLinkAction(prevState: any, formData: FormD
     getFirebaseAdminApp();
     
     // Firebase requires a valid, authorized URL to build the verification link.
-    // This URL must be added to your Firebase project's "Authorized Domains".
+    // This URL MUST be added to your Firebase project's "Authorized Domains" list in the Authentication -> Settings tab.
     // We construct it from an environment variable for flexibility.
-    const continueUrl = process.env.NEXT_PUBLIC_URL ? `${process.env.NEXT_PUBLIC_URL}` : 'http://localhost:9002';
+    const continueUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:9002';
     
     const actionCodeSettings = {
       url: continueUrl,
