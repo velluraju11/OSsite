@@ -236,13 +236,10 @@ export function ContactForm() {
                  </div>
                  
                  {!emailVerified && !emailSent && (
-                    <form action={sendEmailFormAction}>
-                        <input type="hidden" name="email" value={email} />
-                        <Button type="submit" disabled={isEmailSendPending} className="w-full mt-2">
-                            {isEmailSendPending ? <Loader2 className="animate-spin" /> : <Send />}
-                            <span className="ml-2">Verify Email</span>
-                        </Button>
-                    </form>
+                    <Button type="submit" formAction={sendEmailFormAction} disabled={isEmailSendPending} className="w-full mt-2">
+                        {isEmailSendPending ? <Loader2 className="animate-spin" /> : <Send />}
+                        <span className="ml-2">Verify Email</span>
+                    </Button>
                  )}
 
                  <p className="text-sm text-muted-foreground mt-1">We’ll send you a link to verify your email.</p>
