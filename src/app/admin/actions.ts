@@ -5,17 +5,20 @@ import { sign, verify } from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-const SECRET_KEY = 'a-super-secret-key-that-is-long-enough-for-hs256';
+const SECRET_KEY = process.env.AUTH_SECRET;
 
 // WARNING: Hardcoding credentials is not recommended for production.
-const ADMIN_USERNAME = 'velluraju@ryha.in';
-const ADMIN_PASSWORD = 'Velluking@0192';
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
 export async function login(formData: FormData) {
   const username = formData.get('username') as string;
   const password = formData.get('password') as string;
 
   if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    if (!SECRET_KEY) {
+        throw new Error('AUTH_SECRET is not set in the environment variables.');
+    }
     const session = { user: { username } };
     const token = sign(session, SECRET_KEY, { expiresIn: '1h' });
     
@@ -40,6 +43,10 @@ export async function logout() {
 export async function getSession() {
   const sessionCookie = cookies().get('session')?.value;
   if (!sessionCookie) return null;
+   if (!SECRET_KEY) {
+    console.error('AUTH_SECRET is not set. Cannot verify session.');
+    return null;
+  }
   try {
     const session = verify(sessionCookie, SECRET_KEY);
     return session;
