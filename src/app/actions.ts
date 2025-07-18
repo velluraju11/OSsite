@@ -1,5 +1,6 @@
 
 'use server';
+import 'dotenv/config';
 
 import { z } from 'zod';
 import { Submission, ContactFormSchema } from '@/lib/db';
@@ -28,7 +29,7 @@ export async function sendVerificationLinkAction(prevState: any, formData: FormD
     getFirebaseAdminApp();
     
     const actionCodeSettings = {
-      url: `${process.env.NEXT_PUBLIC_URL}?email=${encodeURIComponent(email)}`,
+      url: `${process.env.NEXT_PUBLIC_URL || 'http://localhost:9002'}?email=${encodeURIComponent(email)}`,
       handleCodeInApp: true,
     };
 
@@ -43,8 +44,11 @@ export async function sendVerificationLinkAction(prevState: any, formData: FormD
     if (error.code === 'auth/invalid-action-code-setting') {
         return { error: 'Configuration error: The domain of the link is not authorized. Please add it to your Firebase console.' };
     }
-    if (error.message?.includes('Firebase Admin SDK not configured')) {
+    if (error.message?.includes('Firebase Admin SDK credentials are not set up')) {
         return { error: 'Configuration error: Firebase Admin SDK credentials are not set up on the server.' };
+    }
+     if (error.message?.includes('Could not initialize Firebase Admin SDK')) {
+        return { error: 'Configuration error: Could not initialize Firebase Admin SDK. Please check your credentials.' };
     }
     return { error: 'Could not send verification link. Please ensure Email link sign-in is enabled in your Firebase project.' };
   }
@@ -88,7 +92,7 @@ export async function submitInterestForm(prevState: any, formData: FormData) {
     const { error } = await Submission.create(submissionData);
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(error);
     }
 
     return {

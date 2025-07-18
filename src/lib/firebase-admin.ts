@@ -1,7 +1,7 @@
 
 import * as admin from 'firebase-admin';
 
-const FIREBASE_ADMIN_CONFIG_ERROR = "Firebase Admin SDK not configured. Please add FIREBASE_PRIVATE_KEY and FIREBASE_CLIENT_EMAIL to your .env.local file.";
+const FIREBASE_ADMIN_CONFIG_ERROR = "Firebase Admin SDK credentials are not set up on the server.";
 
 let app: admin.app.App | null = null;
 let initError: Error | null = null;
@@ -34,7 +34,7 @@ function initializeAdminApp() {
     });
   } catch (error: any) {
     console.error('Firebase admin initialization error', error);
-    initError = new Error('Could not initialize Firebase Admin SDK.');
+    initError = new Error('Could not initialize Firebase Admin SDK. Please check your credentials.');
   }
 }
 
