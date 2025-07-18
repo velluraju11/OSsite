@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from 'react';
@@ -11,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, ShieldCheck, MailCheck, Send } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const initialSubmitState = {
   message: '',
@@ -34,10 +36,10 @@ function SubmitButton({ isEmailVerified }: { isEmailVerified: boolean }) {
   );
 }
 
-function SendOtpButton({ action }: { action: (payload: FormData) => void }) {
+function SendOtpButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" formAction={action} disabled={pending} className="shrink-0">
+    <Button type="submit" disabled={pending} className="shrink-0">
       {pending ? <Loader2 className="animate-spin" /> : <Send />}
       <span className="ml-2 hidden md:inline">Send OTP</span>
     </Button>
@@ -59,6 +61,10 @@ export function ContactForm() {
   const [otpVerified, setOtpVerified] = useState(false);
   const [otp, setOtp] = useState('');
   const [otpError, setOtpError] = useState('');
+
+  // Username client-side validation
+  const [username, setUsername] = useState('');
+  const [isUsernameValid, setIsUsernameValid] = useState(true);
 
   // Effect for main form submission
   useEffect(() => {
@@ -84,6 +90,8 @@ export function ContactForm() {
           setOtpVerified(false);
           setOtp('');
           setOtpError('');
+          setUsername('');
+          setIsUsernameValid(true);
       }
     }
   }, [submitState, toast]);
@@ -128,6 +136,17 @@ export function ContactForm() {
         setOtpError('Invalid OTP. Please try again.');
     }
   };
+  
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setUsername(value);
+    const regex = /^[a-zA-Z0-9]*$/;
+    if (regex.test(value)) {
+      setIsUsernameValid(true);
+    } else {
+      setIsUsernameValid(false);
+    }
+  };
 
 
   return (
@@ -152,16 +171,26 @@ export function ContactForm() {
               
                <div>
                 <Label htmlFor="username">Username</Label>
-                <Input id="username" name="username" placeholder="Choose a unique username" required aria-describedby="username-error" />
-                 <p className="text-sm text-muted-foreground mt-1">This will be your unique identifier.</p>
+                <Input 
+                  id="username" 
+                  name="username" 
+                  placeholder="Choose a unique username" 
+                  required 
+                  aria-describedby="username-error" 
+                  value={username}
+                  onChange={handleUsernameChange}
+                  className={cn(!isUsernameValid || submitState.errors?.username ? 'border-destructive focus-visible:ring-destructive' : '')}
+                />
+                 <p className="text-sm text-muted-foreground mt-1">This will be your unique identifier. Only letters and numbers are allowed.</p>
                 <div id="username-error" aria-live="polite">
                   {submitState.errors?.username && <p className="text-sm font-medium text-destructive mt-1">{submitState.errors.username[0]}</p>}
+                  {!isUsernameValid && <p className="text-sm font-medium text-destructive mt-1">Username can only contain letters and numbers.</p>}
                 </div>
               </div>
 
               <div className="space-y-2">
                  <Label htmlFor="email">Email Address</Label>
-                 <div className="flex items-center gap-2">
+                 <form action={sendOtpFormAction} className="flex items-center gap-2">
                     <Input 
                         id="email" 
                         name="email" 
@@ -174,9 +203,9 @@ export function ContactForm() {
                         readOnly={otpSent}
                     />
                     {!otpVerified && !otpSent && (
-                        <SendOtpButton action={sendOtpFormAction} />
+                        <SendOtpButton />
                     )}
-                 </div>
+                 </form>
                  <div className="flex items-center gap-2">
                     {otpSent && !otpVerified && <MailCheck className="w-10 h-10 text-primary shrink-0" />}
                     {otpVerified && <ShieldCheck className="w-10 h-10 text-green-500 shrink-0" />}
@@ -184,7 +213,7 @@ export function ContactForm() {
                  <p className="text-sm text-muted-foreground mt-1">We’ll send you an OTP to verify and whitelist you for updates.</p>
                  <div id="email-error" aria-live="polite">
                     {submitState.errors?.email && <p className="text-sm font-medium text-destructive mt-1">{submitState.errors.email[0]}</p>}
-                    {otpError && !otpVerified && <p className="text-sm font-medium text-destructive mt-1">{otpError}</p>}
+                    {otpState.error && !otpVerified && <p className="text-sm font-medium text-destructive mt-1">{otpState.error}</p>}
                 </div>
               </div>
               
