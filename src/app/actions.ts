@@ -4,19 +4,23 @@
 import { z } from 'zod';
 import { selectFeatureHighlights, type SelectFeatureHighlightsOutput } from '@/ai/flows/feature-highlight-selection';
 
+const phoneRegex = new RegExp(
+  /^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/
+);
+
 const ContactFormSchema = z.object({
-  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
-  email: z.string().email({ message: 'Please enter a valid email.' }),
-  message: z.string().min(10, { message: 'Message must be at least 10 characters.' }),
-  captcha: z.string().refine(val => val === '8', { message: 'Incorrect captcha answer.' }),
+  fullName: z.string().min(2, { message: 'Name must be at least 2 characters.' }).max(50, { message: 'Name must be 50 characters or less.' }),
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
+  mobile: z.string().regex(phoneRegex, 'Invalid mobile number.').optional().or(z.literal('')),
+  designation: z.string({ required_error: 'Please select a designation.'}),
 });
 
 export async function submitInterestForm(prevState: any, formData: FormData) {
   const validatedFields = ContactFormSchema.safeParse({
-    name: formData.get('name'),
+    fullName: formData.get('fullName'),
     email: formData.get('email'),
-    message: formData.get('message'),
-    captcha: formData.get('captcha'),
+    mobile: formData.get('mobile'),
+    designation: formData.get('designation'),
   });
 
   if (!validatedFields.success) {
@@ -29,9 +33,13 @@ export async function submitInterestForm(prevState: any, formData: FormData) {
   
   // Simulate saving to Google Drive
   console.log('New Interest Form Submission:');
-  console.log('Name:', validatedFields.data.name);
+  console.log('Full Name:', validatedFields.data.fullName);
   console.log('Email:', validatedFields.data.email);
-  console.log('Message:', validatedFields.data.message);
+  console.log('Mobile:', validatedFields.data.mobile);
+  console.log('Designation:', validatedFields.data.designation);
+
+  // Here you would add the logic to send an OTP and verify it.
+  // For now, we'll just simulate a successful submission.
 
   return {
     message: 'Thank you for your interest! We have received your message.',
