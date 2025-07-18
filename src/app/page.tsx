@@ -5,17 +5,28 @@ import { CoreValues } from '@/components/landing/core-values';
 import { WhoWeServe } from '@/components/landing/who-we-serve';
 import { ContactForm } from '@/components/landing/contact-form';
 import { Footer } from '@/components/landing/footer';
+import { ScrollAnimation } from '@/components/scroll-animation';
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-dvh bg-background">
       <main className="flex-1">
         <Header />
-        <Features />
-        <WhatRyhaBuilds />
-        <CoreValues />
-        <WhoWeServe />
-        <ContactForm />
+        <ScrollAnimation>
+          <Features />
+        </ScrollAnimation>
+        <ScrollAnimation>
+          <WhatRyhaBuilds />
+        </ScrollAnimation>
+        <ScrollAnimation>
+          <CoreValues />
+        </ScrollAnimation>
+        <ScrollAnimation>
+          <WhoWeServe />
+        </ScrollAnimation>
+        <ScrollAnimation>
+          <ContactForm />
+        </ScrollAnimation>
       </main>
       <Footer />
     </div>
