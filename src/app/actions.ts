@@ -8,6 +8,10 @@ const phoneRegex = new RegExp(
   /^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/
 );
 
+const EmailSchema = z.object({
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
+});
+
 const ContactFormSchema = z.object({
   fullName: z.string().min(2, { message: 'Name must be at least 2 characters.' }).max(50, { message: 'Name must be 50 characters or less.' }),
   email: z.string().email({ message: 'Please enter a valid email address.' }),
@@ -17,7 +21,7 @@ const ContactFormSchema = z.object({
   features: z.string().min(1, { message: 'Please tell us what features you want.'}),
   reason: z.string().min(1, { message: 'Please tell us why you want Ryha OS.'}),
 }).refine(data => {
-  if (data.designation === 'other' && !data.otherDesignation) {
+  if (data.designation === 'other' && (!data.otherDesignation || data.otherDesignation.trim() === '')) {
     return false;
   }
   return true;
@@ -25,6 +29,26 @@ const ContactFormSchema = z.object({
   message: 'Please specify your designation.',
   path: ['otherDesignation'],
 });
+
+export async function sendOtpAction(prevState: any, formData: FormData) {
+  const validatedFields = EmailSchema.safeParse({
+    email: formData.get('email'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      error: validatedFields.error.flatten().fieldErrors.email?.[0] || 'Invalid email address.',
+    };
+  }
+  
+  // Simulate sending OTP
+  console.log('OTP requested for:', validatedFields.data.email);
+  
+  return {
+    success: true,
+    message: 'A verification code has been sent to your email.',
+  };
+}
 
 
 export async function submitInterestForm(prevState: any, formData: FormData) {
