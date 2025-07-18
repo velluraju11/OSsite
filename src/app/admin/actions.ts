@@ -5,13 +5,18 @@ import { sign, verify } from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-const SECRET_KEY = process.env.AUTH_SECRET || 'your-super-secret-key-that-is-at-least-32-chars-long';
+const SECRET_KEY = process.env.AUTH_SECRET || 'a-super-secret-key-that-is-long-enough';
+
+// WARNING: Hardcoding credentials is not recommended for production.
+// This is a temporary workaround for environment variable issues.
+const ADMIN_USERNAME = 'velluraju@ryha.in';
+const ADMIN_PASSWORD = 'Velluking@0192';
 
 export async function login(prevState: any, formData: FormData) {
   const username = formData.get('username') as string;
   const password = formData.get('password') as string;
 
-  if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
+  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
     const session = { user: { username } };
     const token = sign(session, SECRET_KEY, { expiresIn: '1h' });
     
