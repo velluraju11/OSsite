@@ -53,11 +53,11 @@ export function ContactForm() {
   }, [state, toast]);
 
   return (
-    <section id="contact" className="w-full py-16 md:py-24 bg-card">
+    <section id="contact" className="w-full py-16 md:py-24 bg-background">
       <div className="container mx-auto px-4 md:px-6">
-        <Card className="max-w-xl mx-auto bg-background/50 border-primary/10 shadow-2xl shadow-primary/10">
+        <Card className="max-w-xl mx-auto bg-card border-primary/20 shadow-2xl shadow-primary/10 rounded-xl">
           <CardHeader className="text-center">
-            <CardTitle className="font-headline text-3xl">Get Early Access</CardTitle>
+            <CardTitle className="font-headline text-4xl tracking-tight">Get Early Access</CardTitle>
             <CardDescription>
               Join the waitlist and be the first to experience the future of computing.
             </CardDescription>

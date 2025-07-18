@@ -19,17 +19,17 @@ const whoWeServeList = [
 
 export function WhoWeServe() {
   return (
-    <section id="who-we-serve" className="w-full py-16 md:py-24 bg-background">
+    <section id="who-we-serve" className="w-full py-16 md:py-24 bg-card border-y border-border">
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center max-w-3xl mx-auto">
-          <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl">Who We Serve</h2>
+          <h2 className="font-headline text-4xl font-bold tracking-tight sm:text-5xl">Who We Serve</h2>
           <p className="mt-4 text-muted-foreground md:text-lg">
             Ryha’s technology is built for everyone, across every sector.
           </p>
         </div>
         <div className="mt-12 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {whoWeServeList.map((item, index) => (
-            <Card key={index} className="bg-card hover:bg-muted transition-colors duration-300 border border-border/50">
+            <Card key={index} className="bg-card hover:bg-muted/40 transition-colors duration-300 border border-border/50 rounded-xl">
               <CardContent className="p-6 flex items-center text-center gap-4">
                 <div className="text-3xl">{item.emoji}</div>
                 <p className="font-medium text-foreground flex-1 text-left">{item.text}</p>

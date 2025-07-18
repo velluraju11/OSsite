@@ -8,10 +8,10 @@ export function Header() {
       
       <div className="container mx-auto px-4 md:px-6 text-center relative z-10">
         <div className="max-w-3xl mx-auto flex flex-col items-center">
-           <div className="inline-block rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-4">
+           <div className="inline-block rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-4 border border-primary/20 shadow-sm">
             The World’s Smartest Operating System
           </div>
-          <h1 className="font-headline text-5xl font-bold tracking-tighter sm:text-6xl md:text-7xl lg:text-8xl bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70">
+          <h1 className="font-headline text-6xl font-bold tracking-tight sm:text-7xl md:text-8xl lg:text-9xl bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70 leading-tight">
             Ryha OS
           </h1>
           <p className="mt-6 max-w-2xl text-lg md:text-xl text-muted-foreground">
