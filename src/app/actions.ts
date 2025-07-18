@@ -39,8 +39,14 @@ export async function sendVerificationLinkAction(prevState: any, formData: FormD
       message: 'A verification link has been sent to your email. Please check your inbox.',
     };
   } catch (error: any) {
-    console.error('Firebase Error:', error.message);
-    return { error: 'Could not send verification link. Please try again later.' };
+    console.error('Firebase Error:', error.code, error.message);
+    if (error.code === 'auth/invalid-action-code-setting') {
+        return { error: 'Configuration error: The domain of the link is not authorized. Please add it to your Firebase console.' };
+    }
+    if (error.message?.includes('Firebase Admin SDK not configured')) {
+        return { error: 'Configuration error: Firebase Admin SDK credentials are not set up on the server.' };
+    }
+    return { error: 'Could not send verification link. Please ensure Email link sign-in is enabled in your Firebase project.' };
   }
 }
 
