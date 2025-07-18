@@ -18,6 +18,7 @@ try {
       credential: admin.credential.cert({
         projectId,
         clientEmail,
+        // Replace the literal '\n' characters with actual newlines
         privateKey: privateKey.replace(/\\n/g, '\n'),
       }),
     });

@@ -1,5 +1,6 @@
 
 'use server';
+require('dotenv').config({ path: './.env.local' });
 
 import { z } from 'zod';
 import { Submission, ContactFormSchema } from '@/lib/db';
@@ -40,16 +41,16 @@ export async function sendVerificationLinkAction(prevState: any, formData: FormD
     };
   } catch (error: any) {
     console.error('Firebase Error:', error.message);
-    if (error.code === 'auth/invalid-action-code-setting') {
-        return { error: 'Configuration error: The domain of the link is not authorized. Please add it to your Firebase console.' };
+    if (error.code === 'auth/invalid-action-code-setting' || error.message.includes('domain is not authorized')) {
+        return { error: 'Configuration error: The domain of the link is not authorized. Please add it to the authorized domains in your Firebase Authentication settings.' };
     }
     if (error.message?.includes('Firebase Admin SDK credentials are not set up')) {
-        return { error: 'Configuration error: Firebase Admin SDK credentials are not set up on the server.' };
+        return { error: 'Configuration error: Firebase Admin SDK credentials are not set up on the server. Please check your .env.local file.' };
     }
      if (error.message?.includes('Could not initialize Firebase Admin SDK')) {
-        return { error: 'Configuration error: Could not initialize Firebase Admin SDK. Please check your credentials.' };
+        return { error: 'Configuration error: Could not initialize Firebase Admin SDK. Please check your credentials in .env.local.' };
     }
-    return { error: 'Could not send verification link. Please ensure Email link sign-in is enabled in your Firebase project.' };
+    return { error: 'Could not send verification link. Please ensure Email link sign-in is enabled in your Firebase project and that your server has the correct permissions.' };
   }
 }
 
