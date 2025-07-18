@@ -7,14 +7,13 @@ import { redirect } from 'next/navigation';
 
 const SECRET_KEY = process.env.AUTH_SECRET;
 
-export async function login(prevState: any, formData: FormData) {
+if (!SECRET_KEY) {
+  throw new Error('AUTH_SECRET environment variable is not set.');
+}
+
+export async function login(formData: FormData) {
   const username = formData.get('username') as string;
   const password = formData.get('password') as string;
-
-  if (!SECRET_KEY) {
-    console.error('Authentication secret is not configured on the server.');
-    return redirect('/admin/login?error=Configuration+error');
-  }
 
   if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
     const session = { user: { username } };
@@ -29,7 +28,7 @@ export async function login(prevState: any, formData: FormData) {
 
     redirect('/admin/dashboard');
   } else {
-    redirect('/admin/login?error=Invalid+username+or+password');
+    redirect('/admin/login?error=Invalid+credentials');
   }
 }
 
@@ -41,14 +40,12 @@ export async function logout() {
 export async function getSession() {
   const sessionCookie = cookies().get('session')?.value;
   if (!sessionCookie) return null;
-   if (!SECRET_KEY) {
-    console.error('AUTH_SECRET is not set. Cannot verify session.');
-    return null;
-  }
+
   try {
     const session = verify(sessionCookie, SECRET_KEY) as { user: { username: string } };
     return session;
   } catch (error) {
+    // This will handle expired or invalid tokens
     console.error('Invalid session:', error);
     return null;
   }
