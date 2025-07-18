@@ -11,12 +11,10 @@ if (!SECRET_KEY) {
   throw new Error('AUTH_SECRET environment variable is not set.');
 }
 
-export async function login(prevState: any, formData: FormData) {
+export async function login(formData: FormData) {
   const username = formData.get('username') as string;
   const password = formData.get('password') as string;
 
-  // This is a temporary check for debugging.
-  // In a real app, you would compare against hashed passwords from a database.
   if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
     const session = { user: { username } };
     const token = sign(session, SECRET_KEY, { expiresIn: '1h' });
@@ -28,9 +26,9 @@ export async function login(prevState: any, formData: FormData) {
       path: '/',
     });
 
-    return { success: true, error: null };
+    redirect('/admin/dashboard');
   } else {
-    return { success: false, error: 'Invalid credentials. Please try again.' };
+    redirect('/admin/login?error=Invalid%20credentials');
   }
 }
 
