@@ -34,10 +34,10 @@ function SubmitButton({ isEmailVerified }: { isEmailVerified: boolean }) {
   );
 }
 
-function SendOtpButton({ action }: { action: (payload: FormData) => void }) {
+function SendOtpButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" formAction={action} disabled={pending} className="shrink-0">
+    <Button type="submit" disabled={pending} className="shrink-0">
       {pending ? <Loader2 className="animate-spin" /> : <Send />}
       <span className="ml-2 hidden md:inline">Send OTP</span>
     </Button>
@@ -150,9 +150,18 @@ export function ContactForm() {
                 </div>
               </div>
               
+               <div>
+                <Label htmlFor="username">Username</Label>
+                <Input id="username" name="username" placeholder="Choose a unique username" required aria-describedby="username-error" />
+                 <p className="text-sm text-muted-foreground mt-1">This will be your unique identifier.</p>
+                <div id="username-error" aria-live="polite">
+                  {submitState.errors?.username && <p className="text-sm font-medium text-destructive mt-1">{submitState.errors.username[0]}</p>}
+                </div>
+              </div>
+
               <div className="space-y-2">
                  <Label htmlFor="email">Email Address</Label>
-                 <div className="flex items-center gap-2">
+                 <form action={sendOtpFormAction} className="flex items-center gap-2">
                     <Input 
                         id="email" 
                         name="email" 
@@ -165,8 +174,10 @@ export function ContactForm() {
                         readOnly={otpSent}
                     />
                     {!otpVerified && !otpSent && (
-                        <SendOtpButton action={sendOtpFormAction} />
+                        <SendOtpButton />
                     )}
+                 </form>
+                 <div className="flex items-center gap-2">
                     {otpSent && !otpVerified && <MailCheck className="w-10 h-10 text-primary shrink-0" />}
                     {otpVerified && <ShieldCheck className="w-10 h-10 text-green-500 shrink-0" />}
                  </div>
