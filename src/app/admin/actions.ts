@@ -27,7 +27,7 @@ export async function login(prevState: any, formData: FormData) {
       path: '/',
     });
 
-    return { success: true };
+    return { success: true, error: '' };
   }
 
   return { error: 'Invalid username or password.', success: false };
