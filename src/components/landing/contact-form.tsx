@@ -154,7 +154,7 @@ export function ContactForm() {
             <form ref={formRef} action={submitFormAction} className="space-y-6">
               <div>
                 <Label htmlFor="fullName">Full Name</Label>
-                <Input id="fullName" name="fullName" placeholder="Enter your real or hacker alias" required aria-describedby="fullName-error" />
+                <Input id="fullName" name="fullName" placeholder="Enter your real name" required aria-describedby="fullName-error" />
                 <div id="fullName-error" aria-live="polite">
                   {submitState.errors?.fullName && <p className="text-sm font-medium text-destructive mt-1">{submitState.errors.fullName[0]}</p>}
                 </div>
@@ -194,7 +194,7 @@ export function ContactForm() {
                         readOnly={otpSent}
                     />
                     {!otpVerified && !otpSent && (
-                        <Button type="submit" disabled={isOtpPending} className="shrink-0" formAction={sendOtpFormAction}>
+                        <Button type="button" disabled={isOtpPending} className="shrink-0" formAction={sendOtpFormAction}>
                             {isOtpPending ? <Loader2 className="animate-spin" /> : <Send />}
                             <span className="ml-2 hidden md:inline">Send OTP</span>
                         </Button>
@@ -300,3 +300,5 @@ export function ContactForm() {
     </section>
   );
 }
+
+    
