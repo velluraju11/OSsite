@@ -4,31 +4,24 @@
 import { useActionState, useEffect, useRef, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { useToast } from "@/hooks/use-toast"
-import { submitInterestForm, sendVerificationLinkAction } from '@/app/actions';
+import { submitInterestForm } from '@/app/actions';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, ShieldCheck, MailCheck, Send, Info } from 'lucide-react';
+import { Loader2, ShieldCheck, MailCheck, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
-import { getAuth, isSignInWithEmailLink, signInWithEmailLink } from "firebase/auth";
+import { getAuth, isSignInWithEmailLink, sendSignInLinkToEmail, signInWithEmailLink } from "firebase/auth";
 import { getFirebaseApp } from '@/lib/firebase';
-import { useSearchParams } from 'next/navigation';
 
 const initialSubmitState = {
   message: '',
   errors: {},
   reset: false,
-};
-
-const initialEmailState = {
-    error: '',
-    message: '',
-    success: false,
 };
 
 function SubmitButton({ isEmailVerified }: { isEmailVerified: boolean }) {
@@ -43,24 +36,21 @@ function SubmitButton({ isEmailVerified }: { isEmailVerified: boolean }) {
 
 export function ContactForm() {
   const [submitState, submitFormAction, isSubmitPending] = useActionState(submitInterestForm, initialSubmitState);
-  const [emailState, sendEmailFormAction, isEmailSendPending] = useActionState(sendVerificationLinkAction, initialEmailState);
   
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const [showOtherDesignation, setShowOtherDesignation] = useState(false);
   
   const [email, setEmail] = useState('');
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [emailVerified, setEmailVerified] = useState(false);
   const [emailVerificationError, setEmailVerificationError] = useState('');
-  const [isVerifying, setIsVerifying] = useState(true); // Start as true to check on load
-
-  const searchParams = useSearchParams();
+  const [isVerifying, setIsVerifying] = useState(true);
 
   const [username, setUsername] = useState('');
   const [isUsernameValid, setIsUsernameValid] = useState(true);
   
-  // Effect to check for sign-in link on component mount
   useEffect(() => {
     const app = getFirebaseApp();
     if (!app) {
@@ -71,18 +61,14 @@ export function ContactForm() {
     
     const auth = getAuth(app);
     if (isSignInWithEmailLink(auth, window.location.href)) {
-      // Use the email from localStorage to complete the sign-in.
       let savedEmail = window.localStorage.getItem('emailForSignIn');
       if (!savedEmail) {
-        // If the email is not in localStorage (e.g., user opened link on another device),
-        // you might need to prompt the user for their email again.
-        // For simplicity, we'll show an error.
          setEmailVerificationError('Your email could not be found to complete the verification. Please try sending the link again.');
          setIsVerifying(false);
          return;
       }
       signInWithEmailLink(auth, savedEmail, window.location.href)
-        .then((result) => {
+        .then(() => {
           setEmailVerified(true);
           setEmail(savedEmail as string);
           toast({
@@ -90,7 +76,6 @@ export function ContactForm() {
             description: "Your email has been successfully verified.",
           });
            window.localStorage.removeItem('emailForSignIn');
-          // Clean the URL to remove Firebase tokens
           window.history.replaceState({}, document.title, window.location.pathname);
         })
         .catch((error) => {
@@ -105,7 +90,6 @@ export function ContactForm() {
   }, [toast]);
 
 
-  // Effect for main form submission
   useEffect(() => {
     if (isSubmitPending) return;
     if (!submitState.message) return;
@@ -140,23 +124,6 @@ export function ContactForm() {
     }
   }, [submitState, isSubmitPending, toast]);
   
-  // Effect for email verification link action
-  useEffect(() => {
-    if (isEmailSendPending) return;
-    if (emailState.success) {
-      setEmailSent(true);
-      // Store the email in localStorage to be used on return
-      window.localStorage.setItem('emailForSignIn', email);
-      toast({
-        title: 'Verification link sent',
-        description: emailState.message,
-      });
-    }
-    if (emailState.error) {
-      setEmailVerificationError(emailState.error);
-    }
-  }, [emailState, email, isEmailSendPending, toast]);
-  
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setUsername(value);
@@ -168,10 +135,48 @@ export function ContactForm() {
     }
   };
 
-  const handleEmailAction = (formData: FormData) => {
-    setEmailVerificationError(''); // Clear previous errors
-    sendEmailFormAction(formData);
-  }
+  const handleSendVerificationEmail = async () => {
+    setEmailVerificationError('');
+    if (!email) {
+      setEmailVerificationError('Please enter your email address.');
+      return;
+    }
+    
+    const app = getFirebaseApp();
+    if (!app) {
+        setEmailVerificationError('Firebase is not configured correctly.');
+        return;
+    }
+
+    setIsSendingEmail(true);
+    const auth = getAuth(app);
+    const actionCodeSettings = {
+      url: window.location.href, // Use the current URL
+      handleCodeInApp: true,
+    };
+
+    try {
+      await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+      window.localStorage.setItem('emailForSignIn', email);
+      setEmailSent(true);
+      toast({
+        title: 'Verification link sent',
+        description: 'A verification link has been sent to your email. Please check your inbox.',
+      });
+    } catch (error: any) {
+        console.error("Firebase send link error:", error);
+        if (error.code === 'auth/invalid-email') {
+             setEmailVerificationError('The email address is not valid.');
+        } else if (error.code === 'auth/missing-continue-uri') {
+            setEmailVerificationError('Configuration error: A continue URL is missing.');
+        }
+        else {
+             setEmailVerificationError('Could not send verification link. Please check the console for more details and ensure your Firebase project is configured correctly.');
+        }
+    } finally {
+        setIsSendingEmail(false);
+    }
+  };
 
   if (isVerifying) {
     return (
@@ -255,8 +260,8 @@ export function ContactForm() {
                  </div>
                  
                  {!emailVerified && !emailSent && (
-                    <Button formAction={handleEmailAction} disabled={isEmailSendPending} className="w-full mt-2">
-                        {isEmailSendPending ? <Loader2 className="animate-spin" /> : <Send />}
+                    <Button type="button" onClick={handleSendVerificationEmail} disabled={isSendingEmail} className="w-full mt-2">
+                        {isSendingEmail ? <Loader2 className="animate-spin" /> : <Send />}
                         <span className="ml-2">Verify Email</span>
                     </Button>
                  )}
@@ -264,7 +269,6 @@ export function ContactForm() {
                  <p className="text-sm text-muted-foreground mt-1">We’ll send you a link to verify your email.</p>
                  <div id="email-error" aria-live="polite">
                     {submitState.errors?.email && <p className="text-sm font-medium text-destructive mt-1">{submitState.errors.email[0]}</p>}
-                    {emailState.error && !emailVerified && <p className="text-sm font-medium text-destructive mt-1">{emailState.error}</p>}
                     {emailVerificationError && !emailVerified && <p className="text-sm font-medium text-destructive mt-1">{emailVerificationError}</p>}
                  </div>
               </div>
