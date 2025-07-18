@@ -54,16 +54,21 @@ export function Features() {
             Ryha OS is not just an operating system; it's an intelligent partner designed to enhance your digital life with classified security and unparalleled speed.
           </p>
         </div>
-        <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {featuresList.map((feature, index) => (
             <div key={index} className="relative group">
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-10 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
-              <Card className="relative flex flex-col items-center text-center p-6 bg-card h-full transition-all duration-300 group-hover:bg-muted/30 border border-primary/20">
-                <div className="mb-4 p-3 bg-primary/10 rounded-full border border-primary/20">{feature.icon}</div>
-                <CardHeader className="p-0">
-                  <CardTitle className="font-headline text-xl tracking-wide">{feature.title}</CardTitle>
-                </CardHeader>
-                <CardDescription className="mt-2 flex-grow text-foreground/80">{feature.description}</CardDescription>
+              <Card className="relative flex items-start text-left p-6 bg-card h-full transition-all duration-300 border border-primary/10 rounded-xl hover:bg-primary/5 hover:border-primary/30">
+                <div className="mr-4 flex-shrink-0">
+                  <div className="w-12 h-12 flex items-center justify-center bg-primary/10 rounded-lg border border-primary/20">
+                    {feature.icon}
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <CardHeader className="p-0">
+                    <CardTitle className="font-headline text-lg tracking-wide">{feature.title}</CardTitle>
+                  </CardHeader>
+                  <CardDescription className="mt-1 text-foreground/70">{feature.description}</CardDescription>
+                </div>
               </Card>
             </div>
           ))}
