@@ -40,7 +40,7 @@ const featuresList = [
   {
     icon: <Cloud className="w-8 h-8 text-primary" />,
     title: 'Intelligent Drive Integration',
-    description: 'Seamlessly connect with Google Drive for intelligent, user-controlled data storage. Your data is never shared with us.',
+    description: 'Seamlessly connect with Google Drive for intelligent, user-controlled data storage. Nothing is ever shared with us.',
   },
 ];
 

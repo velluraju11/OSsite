@@ -8,7 +8,7 @@ const valuesList = [
     { icon: <Infinity className="w-8 h-8 text-primary"/>, title: 'Boundless Innovation', description: 'No barriers. No limits' },
     { icon: <Wallet className="w-8 h-8 text-primary"/>, title: 'Affordable Power', description: 'Elite tech made accessible' },
     { icon: <Zap className="w-8 h-8 text-primary"/>, title: 'Autonomous Evolution', description: 'Self-updating and self-improving systems' },
-    { icon: <Key className="w-8 h-8 text-primary"/>, title: 'True Freedom', description: 'No surveillance. No vendor lock-ins. Your data is never shared with us.' },
+    { icon: <Key className="w-8 h-8 text-primary"/>, title: 'True Freedom', description: 'Other than form filings, no data from Ryha OS or AI is shared with us. Period.' },
     { icon: <Lightbulb className="w-8 h-8 text-primary"/>, title: 'Real Utility', description: 'Not just hype. Tangible, daily-impacting results' },
 ];
 
