@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, ShieldCheck, MailCheck } from 'lucide-react';
+import { Loader2, ShieldCheck, MailCheck, Send } from 'lucide-react';
 
 const initialState = {
   message: '',
@@ -18,11 +18,11 @@ const initialState = {
   reset: false,
 };
 
-function SubmitButton() {
+function SubmitButton({ isEmailVerified }: { isEmailVerified: boolean }) {
   const { pending } = useFormStatus();
 
   return (
-    <Button type="submit" className="w-full text-lg py-6 glow-shadow" disabled={pending}>
+    <Button type="submit" className="w-full text-lg py-6 glow-shadow" disabled={pending || !isEmailVerified}>
       {pending ? <Loader2 className="animate-spin" /> : 'Join the Waitlist'}
     </Button>
   );
@@ -32,8 +32,17 @@ export function ContactForm() {
   const [state, formAction] = useActionState(submitInterestForm, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
-  const [showOtp, setShowOtp] = useState(false);
   const [showOtherDesignation, setShowOtherDesignation] = useState(false);
+  
+  // OTP State Management
+  const [email, setEmail] = useState('');
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [otpError, setOtpError] = useState('');
+
 
   useEffect(() => {
     if (!state.message) return;
@@ -44,7 +53,6 @@ export function ContactForm() {
         description: state.message,
         variant: "destructive",
       });
-      setShowOtp(false);
     } else {
       toast({
         title: "Success",
@@ -52,22 +60,62 @@ export function ContactForm() {
       });
       if (state.reset) {
           formRef.current?.reset();
-          setShowOtp(false);
           setShowOtherDesignation(false);
+          // Reset OTP state as well
+          setEmail('');
+          setOtpSent(false);
+          setOtpVerified(false);
+          setOtp('');
+          setOtpError('');
       }
     }
   }, [state, toast]);
-
-  const handleEmailSubmit = (e: React.FocusEvent<HTMLInputElement>) => {
-    // Basic email validation before showing OTP
-    if (e.target.value && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.target.value)) {
-      // In a real app, you'd trigger the OTP sending here.
-      console.log("OTP requested for:", e.target.value);
-      setShowOtp(true);
-    } else {
-      setShowOtp(false);
+  
+  const handleSendOtp = async () => {
+    // Basic email validation
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setOtpError('Please enter a valid email address.');
+      return;
     }
-  }
+    setOtpError('');
+    setIsSendingOtp(true);
+    // Simulate API call to send OTP
+    console.log("OTP requested for:", email);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setIsSendingOtp(false);
+    setOtpSent(true);
+    toast({
+      title: "OTP Sent",
+      description: "A verification code has been sent to your email.",
+    });
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otp || otp.length < 6) {
+        setOtpError('Please enter a valid 6-digit OTP.');
+        return;
+    }
+    setOtpError('');
+    setIsVerifyingOtp(true);
+    // Simulate API call to verify OTP
+    console.log("Verifying OTP:", otp);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Simulate success/failure
+    if(otp === '123456') { // Mock OTP
+        setIsVerifyingOtp(false);
+        setOtpVerified(true);
+        setOtpError('');
+        toast({
+          title: "Verified",
+          description: "Your email has been successfully verified.",
+          className: "bg-green-500 text-white"
+        });
+    } else {
+        setIsVerifyingOtp(false);
+        setOtpError('Invalid OTP. Please try again.');
+    }
+  };
 
 
   return (
@@ -92,9 +140,25 @@ export function ContactForm() {
               
               <div>
                 <Label htmlFor="email">Email Address</Label>
-                <div className="relative">
-                  <Input id="email" name="email" type="email" placeholder="ada@newera.com" required aria-describedby="email-error" onBlur={handleEmailSubmit} />
-                  {showOtp && <MailCheck className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />}
+                <div className="flex items-center gap-2">
+                  <Input 
+                    id="email" 
+                    name="email" 
+                    type="email" 
+                    placeholder="ada@newera.com" 
+                    required 
+                    aria-describedby="email-error"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    readOnly={otpSent}
+                  />
+                  {!otpVerified && (
+                     <Button type="button" onClick={handleSendOtp} disabled={isSendingOtp || otpSent} className="shrink-0">
+                       {isSendingOtp ? <Loader2 className="animate-spin" /> : otpSent ? <MailCheck /> : <Send />}
+                       <span className="ml-2 hidden md:inline">{otpSent ? 'Sent' : 'Send OTP'}</span>
+                     </Button>
+                  )}
+                  {otpVerified && <ShieldCheck className="w-10 h-10 text-green-500 shrink-0" />}
                 </div>
                  <p className="text-sm text-muted-foreground mt-1">We’ll send you an OTP to verify and whitelist you for updates.</p>
                  <div id="email-error" aria-live="polite">
@@ -102,20 +166,32 @@ export function ContactForm() {
                 </div>
               </div>
               
-              {showOtp && (
+              {otpSent && !otpVerified && (
                 <div>
                   <Label htmlFor="otp">Email OTP</Label>
-                  <div className="relative">
-                    <Input id="otp" name="otp" type="text" placeholder="Enter the 6-digit code" required />
-                    <ShieldCheck className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
+                  <div className="flex items-center gap-2">
+                    <Input 
+                        id="otp" 
+                        name="otp" 
+                        type="text" 
+                        placeholder="Enter the 6-digit code" 
+                        required
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                        maxLength={6}
+                    />
+                     <Button type="button" onClick={handleVerifyOtp} disabled={isVerifyingOtp} className="shrink-0">
+                       {isVerifyingOtp ? <Loader2 className="animate-spin" /> : 'Verify'}
+                     </Button>
                   </div>
-                   <p className="text-sm text-muted-foreground mt-1">Check your email for the verification code.</p>
+                   <p className="text-sm text-muted-foreground mt-1">Check your email for the verification code. (Hint: it's 123456)</p>
+                   {otpError && <p className="text-sm font-medium text-destructive mt-1">{otpError}</p>}
                 </div>
               )}
 
               <div>
-                <Label htmlFor="mobile">Mobile Number (Optional)</Label>
-                <Input id="mobile" name="mobile" type="tel" placeholder="+1 (555) 123-4567" aria-describedby="mobile-error" />
+                <Label htmlFor="mobile">Mobile Number</Label>
+                <Input id="mobile" name="mobile" type="tel" placeholder="+1 (555) 123-4567" required aria-describedby="mobile-error" />
                 <p className="text-sm text-muted-foreground mt-1">Helps us prioritize based on geolocation.</p>
                  <div id="mobile-error" aria-live="polite">
                   {state.errors?.mobile && <p className="text-sm font-medium text-destructive mt-1">{state.errors.mobile[0]}</p>}
@@ -124,7 +200,7 @@ export function ContactForm() {
 
                <div>
                 <Label htmlFor="designation">Your Designation</Label>
-                <Select name="designation" onValueChange={(value) => setShowOtherDesignation(value === 'other')}>
+                <Select name="designation" required onValueChange={(value) => setShowOtherDesignation(value === 'other')}>
                     <SelectTrigger id="designation" aria-describedby="designation-error">
                         <SelectValue placeholder="Select your role..." />
                     </SelectTrigger>
@@ -147,7 +223,7 @@ export function ContactForm() {
               {showOtherDesignation && (
                 <div>
                   <Label htmlFor="otherDesignation">Please specify</Label>
-                  <Input id="otherDesignation" name="otherDesignation" placeholder="e.g., Marketing Manager" aria-describedby="otherDesignation-error" />
+                  <Input id="otherDesignation" name="otherDesignation" placeholder="e.g., Marketing Manager" required aria-describedby="otherDesignation-error" />
                   <div id="otherDesignation-error" aria-live="polite">
                     {state.errors?.otherDesignation && <p className="text-sm font-medium text-destructive mt-1">{state.errors.otherDesignation[0]}</p>}
                   </div>
@@ -156,15 +232,22 @@ export function ContactForm() {
               
               <div>
                 <Label htmlFor="features">What Features Do You Want in Ryha OS?</Label>
-                <Textarea id="features" name="features" placeholder="e.g., Advanced AI-powered code editor, seamless cloud integration..." />
+                <Textarea id="features" name="features" placeholder="e.g., Advanced AI-powered code editor, seamless cloud integration..." required />
+                 <div id="features-error" aria-live="polite">
+                  {state.errors?.features && <p className="text-sm font-medium text-destructive mt-1">{state.errors.features[0]}</p>}
+                </div>
               </div>
 
               <div>
                 <Label htmlFor="reason">Why do you want Ryha OS?</Label>
-                <Textarea id="reason" name="reason" placeholder="e.g., I'm looking for a more secure and efficient development environment." />
+                <Textarea id="reason" name="reason" placeholder="e.g., I'm looking for a more secure and efficient development environment." required/>
+                 <div id="reason-error" aria-live="polite">
+                  {state.errors?.reason && <p className="text-sm font-medium text-destructive mt-1">{state.errors.reason[0]}</p>}
+                </div>
               </div>
 
-              <SubmitButton />
+              <SubmitButton isEmailVerified={otpVerified} />
+               {!otpVerified && <p className="text-center text-sm text-muted-foreground">Please verify your email to join the waitlist.</p>}
             </form>
           </CardContent>
         </Card>

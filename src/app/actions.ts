@@ -11,11 +11,11 @@ const phoneRegex = new RegExp(
 const ContactFormSchema = z.object({
   fullName: z.string().min(2, { message: 'Name must be at least 2 characters.' }).max(50, { message: 'Name must be 50 characters or less.' }),
   email: z.string().email({ message: 'Please enter a valid email address.' }),
-  mobile: z.string().regex(phoneRegex, 'Invalid mobile number.').optional().or(z.literal('')),
+  mobile: z.string().regex(phoneRegex, 'Invalid mobile number.'),
   designation: z.string({ required_error: 'Please select a designation.'}),
   otherDesignation: z.string().optional(),
-  features: z.string().optional(),
-  reason: z.string().optional(),
+  features: z.string().min(1, { message: 'Please tell us what features you want.'}),
+  reason: z.string().min(1, { message: 'Please tell us why you want Ryha OS.'}),
 }).refine(data => {
   if (data.designation === 'other' && !data.otherDesignation) {
     return false;
@@ -58,11 +58,10 @@ export async function submitInterestForm(prevState: any, formData: FormData) {
   console.log('Features wanted:', validatedFields.data.features);
   console.log('Reason for wanting Ryha OS:', validatedFields.data.reason);
 
-  // Here you would add the logic to send an OTP and verify it.
-  // For now, we'll just simulate a successful submission.
+  // In a real app, this data would be saved to a database or Google Drive.
 
   return {
-    message: 'Thank you for your interest! We have received your message.',
+    message: 'Thank you for your interest! We have received your message and you are now on the waitlist.',
     errors: {},
     reset: true,
   };
