@@ -246,7 +246,7 @@ export function ContactForm() {
                  </div>
                  
                  {!emailVerified && !emailSent && (
-                    <Button type="button" formAction={handleEmailAction} disabled={isEmailSendPending} className="w-full mt-2">
+                    <Button formAction={handleEmailAction} disabled={isEmailSendPending} className="w-full mt-2">
                         {isEmailSendPending ? <Loader2 className="animate-spin" /> : <Send />}
                         <span className="ml-2">Verify Email</span>
                     </Button>
