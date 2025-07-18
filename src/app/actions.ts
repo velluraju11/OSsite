@@ -17,7 +17,7 @@ const existingUsernames = ['ryha', 'admin', 'testuser', 'ada'];
 
 const ContactFormSchema = z.object({
   fullName: z.string().min(2, { message: 'Name must be at least 2 characters.' }).max(50, { message: 'Name must be 50 characters or less.' }),
-  username: z.string().min(3, { message: 'Username must be at least 3 characters.' }).max(20, { message: 'Username must be 20 characters or less.' }).regex(/^[a-zA-Z0-9_]+$/, { message: 'Username can only contain letters, numbers, and underscores.' }).refine(username => !existingUsernames.includes(username.toLowerCase()), { message: 'This username is already taken.' }),
+  username: z.string().min(3, { message: 'Username must be at least 3 characters.' }).max(20, { message: 'Username must be 20 characters or less.' }).regex(/^[a-zA-Z0-9]+$/, { message: 'Username can only contain letters and numbers.' }).refine(username => !existingUsernames.includes(username.toLowerCase()), { message: 'This username is already taken.' }),
   email: z.string().email({ message: 'Please enter a valid email address.' }),
   mobile: z.string().regex(phoneRegex, 'Invalid mobile number.'),
   designation: z.string({ required_error: 'Please select a designation.'}),
