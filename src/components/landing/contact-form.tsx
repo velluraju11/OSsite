@@ -194,7 +194,11 @@ export function ContactForm() {
                         readOnly={otpSent}
                     />
                     {!otpVerified && !otpSent && (
-                        <Button type="button" disabled={isOtpPending} className="shrink-0" formAction={sendOtpFormAction}>
+                       <Button type="button" disabled={isOtpPending} className="shrink-0" onClick={() => {
+                          const formData = new FormData();
+                          formData.append('email', email);
+                          sendOtpFormAction(formData);
+                       }}>
                             {isOtpPending ? <Loader2 className="animate-spin" /> : <Send />}
                             <span className="ml-2 hidden md:inline">Send OTP</span>
                         </Button>
@@ -300,5 +304,3 @@ export function ContactForm() {
     </section>
   );
 }
-
-    

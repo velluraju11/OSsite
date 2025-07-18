@@ -3,35 +3,10 @@
 
 import { z } from 'zod';
 import { selectFeatureHighlights, type SelectFeatureHighlightsOutput } from '@/ai/flows/feature-highlight-selection';
-
-const phoneRegex = new RegExp(
-  /^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/
-);
+import { addSubmission, ContactFormSchema } from '@/lib/db';
 
 const EmailSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address.' }),
-});
-
-// Mock database of existing usernames
-const existingUsernames = ['ryha', 'admin', 'testuser', 'ada'];
-
-const ContactFormSchema = z.object({
-  fullName: z.string().min(2, { message: 'Name must be at least 2 characters.' }).max(50, { message: 'Name must be 50 characters or less.' }),
-  username: z.string().min(3, { message: 'Username must be at least 3 characters.' }).max(20, { message: 'Username must be 20 characters or less.' }).regex(/^[a-zA-Z0-9]+$/, { message: 'Username can only contain letters and numbers.' }).refine(username => !existingUsernames.includes(username.toLowerCase()), { message: 'This username is already taken.' }),
-  email: z.string().email({ message: 'Please enter a valid email address.' }),
-  mobile: z.string().regex(phoneRegex, 'Invalid mobile number.'),
-  designation: z.string({ required_error: 'Please select a designation.'}),
-  otherDesignation: z.string().optional(),
-  features: z.string().min(1, { message: 'Please tell us what features you want.'}),
-  reason: z.string().min(1, { message: 'Please tell us why you want Ryha OS.'}),
-}).refine(data => {
-  if (data.designation === 'other' && (!data.otherDesignation || data.otherDesignation.trim() === '')) {
-    return false;
-  }
-  return true;
-}, {
-  message: 'Please specify your designation.',
-  path: ['otherDesignation'],
 });
 
 export async function sendOtpAction(prevState: any, formData: FormData) {
@@ -75,21 +50,9 @@ export async function submitInterestForm(prevState: any, formData: FormData) {
     };
   }
   
-  // Simulate saving to Google Drive
-  console.log('New Interest Form Submission:');
-  console.log('Full Name:', validatedFields.data.fullName);
-  console.log('Username:', validatedFields.data.username);
-  console.log('Email:', validatedFields.data.email);
-  console.log('Mobile:', validatedFields.data.mobile);
-  console.log('Designation:', validatedFields.data.designation);
-  if (validatedFields.data.designation === 'other') {
-    console.log('Other Designation:', validatedFields.data.otherDesignation);
-  }
-  console.log('Features wanted:', validatedFields.data.features);
-  console.log('Reason for wanting Ryha OS:', validatedFields.data.reason);
+  // Save to our in-memory DB
+  await addSubmission(validatedFields.data);
 
-  // In a real app, this data would be saved to a database or Google Drive.
-  existingUsernames.push(validatedFields.data.username.toLowerCase());
 
   return {
     message: 'Thank you for your interest! We have received your message and you are now on the waitlist.',
@@ -114,3 +77,4 @@ export async function getAiHighlights(userInput: string, engagementLevel: 'low' 
     return [];
   }
 }
+
