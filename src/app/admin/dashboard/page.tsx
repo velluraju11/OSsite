@@ -102,7 +102,7 @@ export default async function DashboardPage() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center">No submissions yet.</TableCell>
+                    <TableCell colSpan={5} className="text-center">{error ? 'Could not load data.' : 'No submissions yet.'}</TableCell>
                   </TableRow>
                 )}
               </TableBody>

@@ -30,10 +30,14 @@ export type Submission = z.infer<typeof ContactFormSchema> & { id: number; creat
 type SubmissionInput = z.infer<typeof ContactFormSchema>;
 
 const supabase = createClient();
+const NO_SUPABASE_ERROR = "Supabase is not configured. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your .env.local file.";
+
 
 // A Submission class to encapsulate database logic
 export class Submission {
   static async create(data: SubmissionInput): Promise<{ submission: Submission | null, error: any }> {
+    if (!supabase) return { submission: null, error: { message: NO_SUPABASE_ERROR } };
+
     const { data: submission, error } = await supabase
       .from('submissions')
       .insert([data])
@@ -44,6 +48,8 @@ export class Submission {
   }
 
   static async getAll(): Promise<{ submissions: Submission[], error: string | null }> {
+    if (!supabase) return { submissions: [], error: NO_SUPABASE_ERROR };
+
     const { data, error } = await supabase
       .from('submissions')
       .select('*')
@@ -58,6 +64,8 @@ export class Submission {
   }
 
   static async isUsernameTaken(username: string): Promise<{ isUsernameTaken: boolean, error: string | null }> {
+    if (!supabase) return { isUsernameTaken: false, error: NO_SUPABASE_ERROR };
+    
     const { data, error } = await supabase
         .from('submissions')
         .select('id')

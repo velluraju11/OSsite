@@ -11,7 +11,9 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 export function createClient() {
     if (!supabaseUrl || !supabaseAnonKey) {
-        throw new Error('Missing Supabase URL or Anon Key in .env.local')
+        // Return null if credentials are not provided, instead of throwing an error.
+        // The calling code will handle this case gracefully.
+        return null;
     }
     
     return createSupabaseClient(supabaseUrl, supabaseAnonKey)
