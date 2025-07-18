@@ -15,7 +15,7 @@ const featuresList = [
   {
     icon: <Mic className="w-8 h-8 text-primary" />,
     title: 'Voice Control',
-    description: 'Enjoy hands-free control with integrated voice commands for enhanced accessibility.',
+    description: 'No keyboard or mouse needed. Enjoy complete hands-free control over any app or game with integrated voice commands.',
   },
   {
     icon: <Bot className="w-8 h-8 text-primary" />,
@@ -40,7 +40,7 @@ const featuresList = [
   {
     icon: <Cloud className="w-8 h-8 text-primary" />,
     title: 'Intelligent Drive Integration',
-    description: 'Seamlessly connect with Google Drive for intelligent, user-controlled data storage.',
+    description: 'Seamlessly connect with Google Drive for intelligent, user-controlled data storage. Your data is never shared with us.',
   },
 ];
 

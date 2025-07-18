@@ -7,7 +7,7 @@ const valuesList = [
     { emoji: '⚙️', title: 'Boundless Innovation', description: 'No barriers. No limits' },
     { emoji: '💸', title: 'Affordable Power', description: 'Elite tech made accessible' },
     { emoji: '♻️', title: 'Autonomous Evolution', description: 'Self-updating and self-improving systems' },
-    { emoji: '⚖️', title: 'True Freedom', description: 'No surveillance. No vendor lock-ins' },
+    { emoji: '⚖️', title: 'True Freedom', description: 'No surveillance. No vendor lock-ins. Your data is never shared with us.' },
     { emoji: '💡', title: 'Real Utility', description: 'Not just hype. Tangible, daily-impacting results' },
 ];
 
