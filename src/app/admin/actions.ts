@@ -5,7 +5,7 @@ import { sign, verify } from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-const SECRET_KEY = process.env.AUTH_SECRET || 'a-super-secret-key-that-is-long-enough';
+const SECRET_KEY = process.env.AUTH_SECRET || 'a-super-secret-key-that-is-long-enough-for-hs256';
 
 // WARNING: Hardcoding credentials is not recommended for production.
 // This is a temporary workaround for environment variable issues.
@@ -27,7 +27,7 @@ export async function login(prevState: any, formData: FormData) {
       path: '/',
     });
 
-    return redirect('/admin/dashboard');
+    return { success: true };
   }
 
   return { error: 'Invalid username or password.' };

@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
 import { login } from '@/app/admin/actions';
 import { Button } from '@/components/ui/button';
@@ -20,7 +20,14 @@ function SubmitButton() {
 }
 
 export default function AdminLoginPage() {
-  const [state, formAction] = useActionState(login, { error: '' });
+  const [state, formAction] = useActionState(login, { error: '', success: false });
+
+  useEffect(() => {
+    if (state?.success) {
+      // Using window.location.href for a full page reload to ensure session is recognized.
+      window.location.href = '/admin/dashboard';
+    }
+  }, [state?.success]);
 
   return (
     <main className="flex min-h-dvh items-center justify-center bg-background p-4">
