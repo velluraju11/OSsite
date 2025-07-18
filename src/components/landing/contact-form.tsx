@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from 'react';
+import { useActionState, useEffect, useRef, useState, useTransition } from 'react';
 import { useFormStatus } from 'react-dom';
 import { useToast } from "@/hooks/use-toast"
 import { submitInterestForm, sendOtpAction } from '@/app/actions';
@@ -39,6 +39,7 @@ function SubmitButton({ isEmailVerified }: { isEmailVerified: boolean }) {
 export function ContactForm() {
   const [submitState, submitFormAction] = useActionState(submitInterestForm, initialSubmitState);
   const [otpState, sendOtpFormAction] = useActionState(sendOtpAction, initialOtpState);
+  const [isOtpPending, startTransition] = useTransition();
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const [showOtherDesignation, setShowOtherDesignation] = useState(false);
@@ -137,8 +138,13 @@ export function ContactForm() {
     }
   };
 
-  const { pending: isOtpPending } = useFormStatus();
-
+  const handleSendOtp = () => {
+    startTransition(() => {
+      const formData = new FormData();
+      formData.append('email', email);
+      sendOtpFormAction(formData);
+    });
+  };
 
   return (
     <section id="contact" className="w-full py-16 md:py-24 bg-background">
@@ -194,11 +200,7 @@ export function ContactForm() {
                         readOnly={otpSent}
                     />
                     {!otpVerified && !otpSent && (
-                       <Button type="button" disabled={isOtpPending} className="shrink-0" onClick={() => {
-                          const formData = new FormData();
-                          formData.append('email', email);
-                          sendOtpFormAction(formData);
-                       }}>
+                       <Button type="button" disabled={isOtpPending} className="shrink-0" onClick={handleSendOtp}>
                             {isOtpPending ? <Loader2 className="animate-spin" /> : <Send />}
                             <span className="ml-2 hidden md:inline">Send OTP</span>
                         </Button>
