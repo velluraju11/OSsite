@@ -1,5 +1,6 @@
 import { Header } from '@/components/landing/header';
 import { Features } from '@/components/landing/features';
+import { WhatRyhaBuilds } from '@/components/landing/what-ryha-builds';
 import { AiHighlighter } from '@/components/landing/ai-highlighter';
 import { WhoWeServe } from '@/components/landing/who-we-serve';
 import { ContactForm } from '@/components/landing/contact-form';
@@ -11,6 +12,7 @@ export default function Home() {
       <main className="flex-1">
         <Header />
         <Features />
+        <WhatRyhaBuilds />
         <AiHighlighter />
         <WhoWeServe />
         <ContactForm />
