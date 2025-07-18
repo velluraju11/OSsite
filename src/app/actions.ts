@@ -13,7 +13,19 @@ const ContactFormSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address.' }),
   mobile: z.string().regex(phoneRegex, 'Invalid mobile number.').optional().or(z.literal('')),
   designation: z.string({ required_error: 'Please select a designation.'}),
+  otherDesignation: z.string().optional(),
+  features: z.string().optional(),
+  reason: z.string().optional(),
+}).refine(data => {
+  if (data.designation === 'other' && !data.otherDesignation) {
+    return false;
+  }
+  return true;
+}, {
+  message: 'Please specify your designation.',
+  path: ['otherDesignation'],
 });
+
 
 export async function submitInterestForm(prevState: any, formData: FormData) {
   const validatedFields = ContactFormSchema.safeParse({
@@ -21,6 +33,9 @@ export async function submitInterestForm(prevState: any, formData: FormData) {
     email: formData.get('email'),
     mobile: formData.get('mobile'),
     designation: formData.get('designation'),
+    otherDesignation: formData.get('otherDesignation'),
+    features: formData.get('features'),
+    reason: formData.get('reason'),
   });
 
   if (!validatedFields.success) {
@@ -37,6 +52,11 @@ export async function submitInterestForm(prevState: any, formData: FormData) {
   console.log('Email:', validatedFields.data.email);
   console.log('Mobile:', validatedFields.data.mobile);
   console.log('Designation:', validatedFields.data.designation);
+  if (validatedFields.data.designation === 'other') {
+    console.log('Other Designation:', validatedFields.data.otherDesignation);
+  }
+  console.log('Features wanted:', validatedFields.data.features);
+  console.log('Reason for wanting Ryha OS:', validatedFields.data.reason);
 
   // Here you would add the logic to send an OTP and verify it.
   // For now, we'll just simulate a successful submission.

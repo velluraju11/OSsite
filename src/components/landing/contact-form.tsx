@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from '@/components/ui/textarea';
 import { Loader2, ShieldCheck, MailCheck } from 'lucide-react';
 
 const initialState = {
@@ -32,6 +33,7 @@ export function ContactForm() {
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const [showOtp, setShowOtp] = useState(false);
+  const [showOtherDesignation, setShowOtherDesignation] = useState(false);
 
   useEffect(() => {
     if (!state.message) return;
@@ -51,6 +53,7 @@ export function ContactForm() {
       if (state.reset) {
           formRef.current?.reset();
           setShowOtp(false);
+          setShowOtherDesignation(false);
       }
     }
   }, [state, toast]);
@@ -121,7 +124,7 @@ export function ContactForm() {
 
                <div>
                 <Label htmlFor="designation">Your Designation</Label>
-                <Select name="designation">
+                <Select name="designation" onValueChange={(value) => setShowOtherDesignation(value === 'other')}>
                     <SelectTrigger id="designation" aria-describedby="designation-error">
                         <SelectValue placeholder="Select your role..." />
                     </SelectTrigger>
@@ -139,6 +142,26 @@ export function ContactForm() {
                  <div id="designation-error" aria-live="polite">
                   {state.errors?.designation && <p className="text-sm font-medium text-destructive mt-1">{state.errors.designation[0]}</p>}
                 </div>
+              </div>
+
+              {showOtherDesignation && (
+                <div>
+                  <Label htmlFor="otherDesignation">Please specify</Label>
+                  <Input id="otherDesignation" name="otherDesignation" placeholder="e.g., Marketing Manager" aria-describedby="otherDesignation-error" />
+                  <div id="otherDesignation-error" aria-live="polite">
+                    {state.errors?.otherDesignation && <p className="text-sm font-medium text-destructive mt-1">{state.errors.otherDesignation[0]}</p>}
+                  </div>
+                </div>
+              )}
+              
+              <div>
+                <Label htmlFor="features">What Features Do You Want in Ryha OS?</Label>
+                <Textarea id="features" name="features" placeholder="e.g., Advanced AI-powered code editor, seamless cloud integration..." />
+              </div>
+
+              <div>
+                <Label htmlFor="reason">Why do you want Ryha OS?</Label>
+                <Textarea id="reason" name="reason" placeholder="e.g., I'm looking for a more secure and efficient development environment." />
               </div>
 
               <SubmitButton />
