@@ -14,7 +14,7 @@ export function Header() {
           <h1 className="font-headline text-6xl font-bold tracking-tight sm:text-7xl md:text-8xl lg:text-9xl bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70 leading-snug">
             Ryha OS
           </h1>
-          <p className="mt-8 max-w-2xl text-lg md:text-xl text-muted-foreground">
+          <p className="mt-8 max-w-2xl text-lg md:text-xl text-foreground/70">
             An AI-native ecosystem that thinks, works, and evolves—like a human. Fully voice-controlled and designed for military-grade security.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
