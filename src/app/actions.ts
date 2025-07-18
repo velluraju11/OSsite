@@ -1,6 +1,5 @@
 
 'use server';
-require('dotenv').config({ path: './.env.local' });
 
 import { z } from 'zod';
 import { Submission, ContactFormSchema } from '@/lib/db';
