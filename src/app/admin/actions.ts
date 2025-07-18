@@ -7,15 +7,11 @@ import { redirect } from 'next/navigation';
 
 const SECRET_KEY = process.env.AUTH_SECRET;
 
-// WARNING: Hardcoding credentials is not recommended for production.
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-
 export async function login(formData: FormData) {
   const username = formData.get('username') as string;
   const password = formData.get('password') as string;
 
-  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+  if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
     if (!SECRET_KEY) {
         throw new Error('AUTH_SECRET is not set in the environment variables.');
     }
@@ -48,7 +44,8 @@ export async function getSession() {
     return null;
   }
   try {
-    const session = verify(sessionCookie, SECRET_KEY);
+    // The type assertion is necessary here because verify can return a string or object.
+    const session = verify(sessionCookie, SECRET_KEY) as { user: { username: string } };
     return session;
   } catch (error) {
     console.error('Invalid session:', error);
