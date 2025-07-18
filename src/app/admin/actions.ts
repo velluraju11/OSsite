@@ -1,7 +1,8 @@
+
 'use server';
 
-import { getSubmissions, Submission } from '@/lib/db';
+import { Submission } from '@/lib/db';
 
-export async function fetchSubmissions(): Promise<Submission[]> {
-    return getSubmissions();
+export async function fetchSubmissions(): Promise<{submissions: Submission[], error: string | null}> {
+    return Submission.getAll();
 }
