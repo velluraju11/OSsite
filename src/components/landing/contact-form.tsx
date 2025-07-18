@@ -42,7 +42,7 @@ function SubmitButton({ isEmailVerified }: { isEmailVerified: boolean }) {
 }
 
 export function ContactForm() {
-  const [submitState, submitFormAction] = useActionState(submitInterestForm, initialSubmitState);
+  const [submitState, submitFormAction, isSubmitPending] = useActionState(submitInterestForm, initialSubmitState);
   const [emailState, sendEmailFormAction, isEmailSendPending] = useActionState(sendVerificationLinkAction, initialEmailState);
   
   const { toast } = useToast();
@@ -56,7 +56,6 @@ export function ContactForm() {
   const [isVerifying, setIsVerifying] = useState(true); // Start as true to check on load
 
   const searchParams = useSearchParams();
-  const emailFromUrl = searchParams.get('email');
 
   const [username, setUsername] = useState('');
   const [isUsernameValid, setIsUsernameValid] = useState(true);
@@ -71,19 +70,27 @@ export function ContactForm() {
     };
     
     const auth = getAuth(app);
-    if (isSignInWithEmailLink(auth, window.location.href) && emailFromUrl) {
-      // Use a temporary email from localStorage if needed, or prompt the user.
-      const savedEmail = window.localStorage.getItem('emailForSignIn') || emailFromUrl;
+    if (isSignInWithEmailLink(auth, window.location.href)) {
+      // Use the email from localStorage to complete the sign-in.
+      let savedEmail = window.localStorage.getItem('emailForSignIn');
+      if (!savedEmail) {
+        // If the email is not in localStorage (e.g., user opened link on another device),
+        // you might need to prompt the user for their email again.
+        // For simplicity, we'll show an error.
+         setEmailVerificationError('Your email could not be found to complete the verification. Please try sending the link again.');
+         setIsVerifying(false);
+         return;
+      }
       signInWithEmailLink(auth, savedEmail, window.location.href)
         .then((result) => {
           setEmailVerified(true);
-          setEmail(savedEmail);
+          setEmail(savedEmail as string);
           toast({
             title: "Verified",
             description: "Your email has been successfully verified.",
           });
            window.localStorage.removeItem('emailForSignIn');
-          // Clean the URL
+          // Clean the URL to remove Firebase tokens
           window.history.replaceState({}, document.title, window.location.pathname);
         })
         .catch((error) => {
@@ -95,11 +102,12 @@ export function ContactForm() {
     } else {
         setIsVerifying(false);
     }
-  }, [emailFromUrl, toast]);
+  }, [toast]);
 
 
   // Effect for main form submission
   useEffect(() => {
+    if (isSubmitPending) return;
     if (!submitState.message) return;
     
     if (submitState.errors && Object.keys(submitState.errors).length > 0) {
@@ -130,10 +138,11 @@ export function ContactForm() {
           setIsUsernameValid(true);
       }
     }
-  }, [submitState, toast]);
+  }, [submitState, isSubmitPending, toast]);
   
   // Effect for email verification link action
   useEffect(() => {
+    if (isEmailSendPending) return;
     if (emailState.success) {
       setEmailSent(true);
       // Store the email in localStorage to be used on return
@@ -146,7 +155,7 @@ export function ContactForm() {
     if (emailState.error) {
       setEmailVerificationError(emailState.error);
     }
-  }, [emailState, email, toast]);
+  }, [emailState, email, isEmailSendPending, toast]);
   
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
