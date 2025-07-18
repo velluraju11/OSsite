@@ -36,17 +36,6 @@ function SubmitButton({ isEmailVerified }: { isEmailVerified: boolean }) {
   );
 }
 
-function SendOtpButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" disabled={pending} className="shrink-0" formAction={sendOtpAction}>
-      {pending ? <Loader2 className="animate-spin" /> : <Send />}
-      <span className="ml-2 hidden md:inline">Send OTP</span>
-    </Button>
-  );
-}
-
-
 export function ContactForm() {
   const [submitState, submitFormAction] = useActionState(submitInterestForm, initialSubmitState);
   const [otpState, sendOtpFormAction] = useActionState(sendOtpAction, initialOtpState);
@@ -148,6 +137,8 @@ export function ContactForm() {
     }
   };
 
+  const { pending: isOtpPending } = useFormStatus();
+
 
   return (
     <section id="contact" className="w-full py-16 md:py-24 bg-background">
@@ -203,7 +194,10 @@ export function ContactForm() {
                         readOnly={otpSent}
                     />
                     {!otpVerified && !otpSent && (
-                        <SendOtpButton />
+                        <Button type="submit" disabled={isOtpPending} className="shrink-0" formAction={sendOtpFormAction}>
+                            {isOtpPending ? <Loader2 className="animate-spin" /> : <Send />}
+                            <span className="ml-2 hidden md:inline">Send OTP</span>
+                        </Button>
                     )}
                  </div>
                  <div className="flex items-center gap-2">
