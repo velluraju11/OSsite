@@ -28,8 +28,12 @@ export async function sendVerificationLinkAction(prevState: any, formData: FormD
   try {
     getFirebaseAdminApp();
     
+    // Use a relative URL or a properly configured environment variable.
+    // Firebase will append the necessary action tokens to this URL.
+    const continueUrl = process.env.NEXT_PUBLIC_URL ? `${process.env.NEXT_PUBLIC_URL}` : '/';
+    
     const actionCodeSettings = {
-      url: `${process.env.NEXT_PUBLIC_URL || 'http://localhost:9002'}/?email=${encodeURIComponent(email)}`,
+      url: continueUrl,
       handleCodeInApp: true,
     };
     
@@ -40,7 +44,7 @@ export async function sendVerificationLinkAction(prevState: any, formData: FormD
       message: 'A verification link has been sent to your email. Please check your inbox.',
     };
   } catch (error: any) {
-    console.error('Firebase Error:', error.message);
+    console.error('Firebase Error:', error);
     if (error.code === 'auth/invalid-action-code-setting' || error.message.includes('domain is not authorized')) {
         return { error: 'Configuration error: The domain of the link is not authorized. Please add it to the authorized domains in your Firebase Authentication settings.' };
     }
