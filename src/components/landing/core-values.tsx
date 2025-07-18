@@ -14,7 +14,7 @@ const valuesList = [
 
 export function CoreValues() {
   return (
-    <section id="core-values" className="w-full py-16 md:py-24 bg-card">
+    <section id="core-values" className="w-full py-16 md:py-24 bg-background">
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center max-w-3xl mx-auto">
           <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl">Our Core Values</h2>
@@ -22,9 +22,9 @@ export function CoreValues() {
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {valuesList.map((value, index) => (
              <div key={index} className="relative group">
-               <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-10 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-                <Card className="relative flex flex-col items-center text-center p-6 bg-card h-full">
-                  <div className="text-5xl mb-4">{value.icon}</div>
+               <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-primary/50 rounded-lg blur opacity-10 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                <Card className="relative flex flex-col items-center text-center p-6 bg-card h-full transition-all duration-300 group-hover:bg-muted/30">
+                  <div className="mb-4">{value.icon}</div>
                   <CardHeader className="p-0">
                     <CardTitle className="font-headline text-xl">{value.title}</CardTitle>
                   </CardHeader>

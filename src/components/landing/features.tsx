@@ -57,8 +57,8 @@ export function Features() {
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {featuresList.map((feature, index) => (
             <div key={index} className="relative group">
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
-              <Card className="relative flex flex-col items-center text-center p-6 bg-card h-full">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-10 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+              <Card className="relative flex flex-col items-center text-center p-6 bg-card h-full transition-all duration-300 group-hover:bg-muted/30">
                 <div className="mb-4 p-3 bg-primary/10 rounded-full">{feature.icon}</div>
                 <CardHeader className="p-0">
                   <CardTitle className="font-headline text-xl">{feature.title}</CardTitle>

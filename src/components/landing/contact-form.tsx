@@ -55,7 +55,7 @@ export function ContactForm() {
   return (
     <section id="contact" className="w-full py-16 md:py-24 bg-card">
       <div className="container mx-auto px-4 md:px-6">
-        <Card className="max-w-xl mx-auto bg-background/50 border-primary/20 shadow-lg shadow-primary/10">
+        <Card className="max-w-xl mx-auto bg-background/50 border-primary/10 shadow-2xl shadow-primary/10">
           <CardHeader className="text-center">
             <CardTitle className="font-headline text-3xl">Get Early Access</CardTitle>
             <CardDescription>

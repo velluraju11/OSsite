@@ -2,13 +2,13 @@ import { Button } from '@/components/ui/button';
 
 export function Header() {
   return (
-    <section className="w-full py-20 md:py-32 lg:py-40 bg-grid relative overflow-hidden border-b border-primary/20">
+    <section className="w-full py-20 md:py-32 lg:py-40 bg-grid relative overflow-hidden border-b border-primary/10">
       <div className="absolute pointer-events-none inset-0 flex items-center justify-center bg-background [mask-image:radial-gradient(ellipse_at_center,transparent_10%,black)]"></div>
       <div className="absolute pointer-events-none -bottom-1/2 left-0 right-0 h-1/2 w-full bg-gradient-to-t from-background to-transparent"></div>
       
       <div className="container mx-auto px-4 md:px-6 text-center relative z-10">
         <div className="max-w-3xl mx-auto flex flex-col items-center">
-           <div className="inline-block rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary glow-shadow mb-4">
+           <div className="inline-block rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-4">
             The World’s Smartest Operating System
           </div>
           <h1 className="font-headline text-5xl font-bold tracking-tighter sm:text-6xl md:text-7xl lg:text-8xl bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70">
