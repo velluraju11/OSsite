@@ -1,4 +1,4 @@
-import { fetchSubmissions, logout } from '@/app/admin/actions';
+import { fetchSubmissions } from '@/app/admin/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -10,19 +10,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Eye, LogOut } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { Submission } from '@/lib/db';
-
-function LogoutButton() {
-  return (
-    <form action={logout}>
-      <Button type="submit" variant="outline" size="sm">
-        <LogOut className="mr-2 h-4 w-4" />
-        Logout
-      </Button>
-    </form>
-  );
-}
 
 function ViewSubmissionDialog({ submission }: { submission: Submission }) {
   return (
@@ -66,7 +55,6 @@ export default async function DashboardPage() {
                 <CardTitle>Admin Dashboard</CardTitle>
                 <CardDescription>View and manage waitlist submissions for Ryha OS.</CardDescription>
               </div>
-              <LogoutButton />
             </div>
           </CardHeader>
           <CardContent>
