@@ -73,7 +73,7 @@ export default async function DashboardPage() {
                     <TableRow key={submission.id}>
                       <TableCell className="font-medium">{submission.fullName}</TableCell>
                       <TableCell>{submission.email}</TableCell>
-                      <TableCell>{submission.designation}</TableCell>
+                      <TableCell>{submission.designation === 'other' ? submission.otherDesignation : submission.designation}</TableCell>
                       <TableCell className="text-right">
                         <ViewSubmissionDialog submission={submission} />
                       </TableCell>

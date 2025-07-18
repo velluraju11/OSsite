@@ -4,6 +4,7 @@
 import { z } from 'zod';
 import { selectFeatureHighlights, type SelectFeatureHighlightsOutput } from '@/ai/flows/feature-highlight-selection';
 import { addSubmission, ContactFormSchema } from '@/lib/db';
+import { saveToGoogleDrive } from '@/lib/drive';
 
 const EmailSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address.' }),
@@ -50,13 +51,24 @@ export async function submitInterestForm(prevState: any, formData: FormData) {
     };
   }
   
-  // Save to our in-memory DB
-  await addSubmission(validatedFields.data);
+  try {
+    // Save to our in-memory DB
+    const submission = await addSubmission(validatedFields.data);
 
+    // Save to Google Drive
+    await saveToGoogleDrive(submission);
 
-  return {
-    message: 'Thank you for your interest! We have received your message and you are now on the waitlist.',
-    errors: {},
-    reset: true,
-  };
+    return {
+      message: 'Thank you for your interest! We have received your message and you are now on the waitlist.',
+      errors: {},
+      reset: true,
+    };
+  } catch (error) {
+    console.error('Submission Error:', error);
+    return {
+      message: 'An unexpected error occurred. Please try again.',
+      errors: {},
+      reset: false,
+    }
+  }
 }

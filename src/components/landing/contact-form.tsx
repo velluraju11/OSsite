@@ -13,6 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, ShieldCheck, MailCheck, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Terminal } from 'lucide-react';
+
 
 const initialSubmitState = {
   message: '',
@@ -37,9 +40,9 @@ function SubmitButton({ isEmailVerified }: { isEmailVerified: boolean }) {
 }
 
 export function ContactForm() {
-  const [submitState, submitFormAction] = useActionState(submitInterestForm, initialSubmitState);
+  const [submitState, submitFormAction, isSubmitPending] = useActionState(submitInterestForm, initialSubmitState);
   const [otpState, sendOtpFormAction] = useActionState(sendOtpAction, initialOtpState);
-  const [isOtpPending, startTransition] = useTransition();
+  const [isOtpSendPending, startOtpTransition] = useTransition();
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const [showOtherDesignation, setShowOtherDesignation] = useState(false);
@@ -61,12 +64,21 @@ export function ContactForm() {
     if (!submitState.message) return;
     
     if (submitState.errors && Object.keys(submitState.errors).length > 0) {
+      // Errors are now displayed inline, but we can still toast a generic error message
       toast({
         title: "Error",
         description: submitState.message,
         variant: "destructive",
       });
-    } else {
+    } else if (!submitState.reset) {
+       // Handle other non-successful but non-validation-error cases
+        toast({
+          title: "Error",
+          description: submitState.message,
+          variant: "destructive",
+       });
+    }
+     else {
       toast({
         title: "Success",
         description: submitState.message,
@@ -139,7 +151,7 @@ export function ContactForm() {
   };
 
   const handleSendOtp = () => {
-    startTransition(() => {
+    startOtpTransition(() => {
       const formData = new FormData();
       formData.append('email', email);
       sendOtpFormAction(formData);
@@ -157,6 +169,15 @@ export function ContactForm() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+             {submitState?.errors && Object.keys(submitState.errors).length > 0 && (
+              <Alert variant="destructive" className="mb-4">
+                <Terminal className="h-4 w-4" />
+                <AlertTitle>Heads up!</AlertTitle>
+                <AlertDescription>
+                  {submitState.message}
+                </AlertDescription>
+              </Alert>
+            )}
             <form ref={formRef} action={submitFormAction} className="space-y-6">
               <div>
                 <Label htmlFor="fullName">Full Name</Label>
@@ -200,8 +221,8 @@ export function ContactForm() {
                         readOnly={otpSent}
                     />
                     {!otpVerified && !otpSent && (
-                       <Button type="button" disabled={isOtpPending} className="shrink-0" onClick={handleSendOtp}>
-                            {isOtpPending ? <Loader2 className="animate-spin" /> : <Send />}
+                       <Button type="button" disabled={isOtpSendPending} className="shrink-0" onClick={handleSendOtp}>
+                            {isOtpSendPending ? <Loader2 className="animate-spin" /> : <Send />}
                             <span className="ml-2 hidden md:inline">Send OTP</span>
                         </Button>
                     )}
