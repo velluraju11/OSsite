@@ -72,19 +72,22 @@ export function ContactForm() {
     
     const auth = getAuth(app);
     if (isSignInWithEmailLink(auth, window.location.href) && emailFromUrl) {
-      signInWithEmailLink(auth, emailFromUrl, window.location.href)
+      // Use a temporary email from localStorage if needed, or prompt the user.
+      const savedEmail = window.localStorage.getItem('emailForSignIn') || emailFromUrl;
+      signInWithEmailLink(auth, savedEmail, window.location.href)
         .then((result) => {
           setEmailVerified(true);
-          setEmail(emailFromUrl);
+          setEmail(savedEmail);
           toast({
             title: "Verified",
             description: "Your email has been successfully verified.",
           });
+           window.localStorage.removeItem('emailForSignIn');
           // Clean the URL
           window.history.replaceState({}, document.title, window.location.pathname);
         })
         .catch((error) => {
-          setEmailVerificationError('Failed to verify email. The link may have expired.');
+          setEmailVerificationError('Failed to verify email. The link may be invalid or expired.');
           console.error("Firebase sign-in error", error);
         }).finally(() => {
             setIsVerifying(false);
@@ -128,11 +131,13 @@ export function ContactForm() {
       }
     }
   }, [submitState, toast]);
-
+  
   // Effect for email verification link action
   useEffect(() => {
     if (emailState.success) {
       setEmailSent(true);
+      // Store the email in localStorage to be used on return
+      window.localStorage.setItem('emailForSignIn', email);
       toast({
         title: 'Verification link sent',
         description: emailState.message,
@@ -141,7 +146,7 @@ export function ContactForm() {
     if (emailState.error) {
       setEmailVerificationError(emailState.error);
     }
-  }, [emailState, toast]);
+  }, [emailState, email, toast]);
   
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -153,6 +158,11 @@ export function ContactForm() {
       setIsUsernameValid(false);
     }
   };
+
+  const handleEmailAction = (formData: FormData) => {
+    setEmailVerificationError(''); // Clear previous errors
+    sendEmailFormAction(formData);
+  }
 
   if (isVerifying) {
     return (
@@ -236,7 +246,7 @@ export function ContactForm() {
                  </div>
                  
                  {!emailVerified && !emailSent && (
-                    <Button type="submit" formAction={sendEmailFormAction} disabled={isEmailSendPending} className="w-full mt-2">
+                    <Button type="button" formAction={handleEmailAction} disabled={isEmailSendPending} className="w-full mt-2">
                         {isEmailSendPending ? <Loader2 className="animate-spin" /> : <Send />}
                         <span className="ml-2">Verify Email</span>
                     </Button>

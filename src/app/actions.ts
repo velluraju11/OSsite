@@ -29,10 +29,10 @@ export async function sendVerificationLinkAction(prevState: any, formData: FormD
     getFirebaseAdminApp();
     
     const actionCodeSettings = {
-      url: `${process.env.NEXT_PUBLIC_URL || 'http://localhost:9002'}?email=${encodeURIComponent(email)}`,
+      url: `${process.env.NEXT_PUBLIC_URL || 'http://localhost:9002'}/?email=${encodeURIComponent(email)}`,
       handleCodeInApp: true,
     };
-
+    
     await auth().generateSignInWithEmailLink(email, actionCodeSettings);
 
     return {

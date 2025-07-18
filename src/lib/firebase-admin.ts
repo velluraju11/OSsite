@@ -7,7 +7,6 @@ let app: admin.app.App | null = null;
 let initError: Error | null = null;
 
 // Initialize the app immediately at the module level.
-// Next.js guarantees that process.env is populated at this stage on the server.
 try {
   const privateKey = process.env.FIREBASE_PRIVATE_KEY;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
@@ -25,22 +24,23 @@ try {
   } else if (admin.apps.length > 0) {
     app = admin.app();
   } else {
-     throw new Error(FIREBASE_ADMIN_CONFIG_ERROR);
+     // Don't throw here, let getFirebaseAdminApp handle it
   }
 } catch (error: any) {
-  console.error('Firebase admin initialization error', error);
+  console.error('Firebase admin initialization error:', error);
   initError = new Error('Could not initialize Firebase Admin SDK. Please check your credentials in .env.local.');
 }
 
 
 export function getFirebaseAdminApp() {
+  // If there was an error during the initial attempt, throw it.
   if (initError) {
     throw initError;
   }
+  
+  // If the app is not initialized after the initial attempt, throw a clear error.
   if (!app) {
-    // This should theoretically not be reached if credentials are set,
-    // but it's a fallback.
-    throw new Error("Firebase Admin SDK is not initialized. Check server logs for details.");
+    throw new Error(FIREBASE_ADMIN_CONFIG_ERROR);
   }
   
   return app;
