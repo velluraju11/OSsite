@@ -27,7 +27,7 @@ export async function login(prevState: any, formData: FormData) {
       path: '/',
     });
 
-    return { success: true };
+    redirect('/admin/dashboard');
   }
 
   return { error: 'Invalid username or password.' };
