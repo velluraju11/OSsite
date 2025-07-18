@@ -1,21 +1,23 @@
 
 "use client";
 
-import { useActionState, useEffect, useRef, useState, useTransition } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { useToast } from "@/hooks/use-toast"
-import { submitInterestForm, sendOtpAction } from '@/app/actions';
+import { submitInterestForm, sendVerificationLinkAction } from '@/app/actions';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, ShieldCheck, MailCheck, Send } from 'lucide-react';
+import { Loader2, ShieldCheck, MailCheck, Send, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
-
+import { getAuth, isSignInWithEmailLink, signInWithEmailLink } from "firebase/auth";
+import { getFirebaseApp } from '@/lib/firebase';
+import { useSearchParams } from 'next/navigation';
 
 const initialSubmitState = {
   message: '',
@@ -23,7 +25,7 @@ const initialSubmitState = {
   reset: false,
 };
 
-const initialOtpState = {
+const initialEmailState = {
     error: '',
     message: '',
     success: false,
@@ -40,38 +42,70 @@ function SubmitButton({ isEmailVerified }: { isEmailVerified: boolean }) {
 }
 
 export function ContactForm() {
-  const [submitState, submitFormAction, isSubmitPending] = useActionState(submitInterestForm, initialSubmitState);
-  const [otpState, sendOtpFormAction] = useActionState(sendOtpAction, initialOtpState);
-  const [isOtpSendPending, startOtpTransition] = useTransition();
+  const [submitState, submitFormAction] = useActionState(submitInterestForm, initialSubmitState);
+  const [emailState, sendEmailFormAction, isEmailSendPending] = useActionState(sendVerificationLinkAction, initialEmailState);
+  
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const [showOtherDesignation, setShowOtherDesignation] = useState(false);
   
-  // OTP State Management
   const [email, setEmail] = useState('');
-  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpVerified, setOtpVerified] = useState(false);
-  const [otp, setOtp] = useState('');
-  const [otpError, setOtpError] = useState('');
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [emailVerificationError, setEmailVerificationError] = useState('');
+  const [isVerifying, setIsVerifying] = useState(true); // Start as true to check on load
 
-  // Username client-side validation
+  const searchParams = useSearchParams();
+  const emailFromUrl = searchParams.get('email');
+
   const [username, setUsername] = useState('');
   const [isUsernameValid, setIsUsernameValid] = useState(true);
+  
+  // Effect to check for sign-in link on component mount
+  useEffect(() => {
+    const app = getFirebaseApp();
+    if (!app) {
+      console.log("Firebase not configured");
+      setIsVerifying(false);
+      return;
+    };
+    
+    const auth = getAuth(app);
+    if (isSignInWithEmailLink(auth, window.location.href) && emailFromUrl) {
+      signInWithEmailLink(auth, emailFromUrl, window.location.href)
+        .then((result) => {
+          setEmailVerified(true);
+          setEmail(emailFromUrl);
+          toast({
+            title: "Verified",
+            description: "Your email has been successfully verified.",
+          });
+          // Clean the URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+        })
+        .catch((error) => {
+          setEmailVerificationError('Failed to verify email. The link may have expired.');
+          console.error("Firebase sign-in error", error);
+        }).finally(() => {
+            setIsVerifying(false);
+        });
+    } else {
+        setIsVerifying(false);
+    }
+  }, [emailFromUrl, toast]);
+
 
   // Effect for main form submission
   useEffect(() => {
     if (!submitState.message) return;
     
     if (submitState.errors && Object.keys(submitState.errors).length > 0) {
-      // Errors are now displayed inline, but we can still toast a generic error message
       toast({
         title: "Error",
         description: submitState.message,
         variant: "destructive",
       });
     } else if (!submitState.reset) {
-       // Handle other non-successful but non-validation-error cases
         toast({
           title: "Error",
           description: submitState.message,
@@ -86,58 +120,28 @@ export function ContactForm() {
       if (submitState.reset) {
           formRef.current?.reset();
           setShowOtherDesignation(false);
-          // Reset OTP state as well
           setEmail('');
-          setOtpSent(false);
-          setOtpVerified(false);
-          setOtp('');
-          setOtpError('');
+          setEmailSent(false);
+          setEmailVerified(false);
           setUsername('');
           setIsUsernameValid(true);
       }
     }
   }, [submitState, toast]);
 
-  // Effect for OTP form action
+  // Effect for email verification link action
   useEffect(() => {
-    if (otpState.success) {
-      setOtpSent(true);
+    if (emailState.success) {
+      setEmailSent(true);
       toast({
-        title: 'OTP Sent',
-        description: otpState.message,
+        title: 'Verification link sent',
+        description: emailState.message,
       });
     }
-    if (otpState.error) {
-      setOtpError(otpState.error);
+    if (emailState.error) {
+      setEmailVerificationError(emailState.error);
     }
-  }, [otpState, toast]);
-  
-  const handleVerifyOtp = async () => {
-    if (!otp || otp.length < 6) {
-        setOtpError('Please enter a valid 6-digit OTP.');
-        return;
-    }
-    setOtpError('');
-    setIsVerifyingOtp(true);
-    // Simulate API call to verify OTP
-    console.log("Verifying OTP:", otp);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Simulate success/failure
-    if(otp === '123456') { // Mock OTP
-        setIsVerifyingOtp(false);
-        setOtpVerified(true);
-        setOtpError('');
-        toast({
-          title: "Verified",
-          description: "Your email has been successfully verified.",
-          className: "bg-green-500 text-white"
-        });
-    } else {
-        setIsVerifyingOtp(false);
-        setOtpError('Invalid OTP. Please try again.');
-    }
-  };
+  }, [emailState, toast]);
   
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -150,13 +154,20 @@ export function ContactForm() {
     }
   };
 
-  const handleSendOtp = () => {
-    startOtpTransition(() => {
-      const formData = new FormData();
-      formData.append('email', email);
-      sendOtpFormAction(formData);
-    });
-  };
+  if (isVerifying) {
+    return (
+        <section id="contact" className="w-full py-16 md:py-24 bg-background">
+            <div className="container mx-auto px-4 md:px-6 flex justify-center">
+                <Card className="max-w-xl mx-auto bg-card border-primary/20 shadow-2xl shadow-primary/10 rounded-xl p-6">
+                    <div className="flex items-center space-x-4">
+                        <Loader2 className="animate-spin text-primary" size={32} />
+                        <p className="text-lg">Verifying your email...</p>
+                    </div>
+                </Card>
+            </div>
+        </section>
+    )
+  }
 
   return (
     <section id="contact" className="w-full py-16 md:py-24 bg-background">
@@ -208,7 +219,7 @@ export function ContactForm() {
 
               <div className="space-y-2">
                  <Label htmlFor="email">Email Address</Label>
-                 <div className="flex items-center gap-2">
+                 <div className="relative">
                     <Input 
                         id="email" 
                         name="email" 
@@ -218,47 +229,38 @@ export function ContactForm() {
                         aria-describedby="email-error"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        readOnly={otpSent}
+                        readOnly={emailSent || emailVerified}
+                        className={cn(emailVerified && 'pl-8 border-green-500 focus-visible:ring-green-500')}
                     />
-                    {!otpVerified && !otpSent && (
-                       <Button type="button" disabled={isOtpSendPending} className="shrink-0" onClick={handleSendOtp}>
-                            {isOtpSendPending ? <Loader2 className="animate-spin" /> : <Send />}
-                            <span className="ml-2 hidden md:inline">Send OTP</span>
+                    {emailVerified && <ShieldCheck className="w-4 h-4 text-green-500 absolute left-2 top-1/2 -translate-y-1/2" />}
+                 </div>
+                 
+                 {!emailVerified && !emailSent && (
+                    <form action={sendEmailFormAction}>
+                        <input type="hidden" name="email" value={email} />
+                        <Button type="submit" disabled={isEmailSendPending} className="w-full mt-2">
+                            {isEmailSendPending ? <Loader2 className="animate-spin" /> : <Send />}
+                            <span className="ml-2">Verify Email</span>
                         </Button>
-                    )}
-                 </div>
-                 <div className="flex items-center gap-2">
-                    {otpSent && !otpVerified && <MailCheck className="w-10 h-10 text-primary shrink-0" />}
-                    {otpVerified && <ShieldCheck className="w-10 h-10 text-green-500 shrink-0" />}
-                 </div>
-                 <p className="text-sm text-muted-foreground mt-1">We’ll send you an OTP to verify and whitelist you for updates.</p>
+                    </form>
+                 )}
+
+                 <p className="text-sm text-muted-foreground mt-1">We’ll send you a link to verify your email.</p>
                  <div id="email-error" aria-live="polite">
                     {submitState.errors?.email && <p className="text-sm font-medium text-destructive mt-1">{submitState.errors.email[0]}</p>}
-                    {otpState.error && !otpVerified && <p className="text-sm font-medium text-destructive mt-1">{otpState.error}</p>}
-                </div>
+                    {emailState.error && !emailVerified && <p className="text-sm font-medium text-destructive mt-1">{emailState.error}</p>}
+                    {emailVerificationError && !emailVerified && <p className="text-sm font-medium text-destructive mt-1">{emailVerificationError}</p>}
+                 </div>
               </div>
               
-              {otpSent && !otpVerified && (
-                <div>
-                  <Label htmlFor="otp">Email OTP</Label>
-                  <div className="flex items-center gap-2">
-                    <Input 
-                        id="otp" 
-                        name="otp" 
-                        type="text" 
-                        placeholder="Enter the 6-digit code" 
-                        required
-                        value={otp}
-                        onChange={(e) => setOtp(e.target.value)}
-                        maxLength={6}
-                    />
-                     <Button type="button" onClick={handleVerifyOtp} disabled={isVerifyingOtp} className="shrink-0">
-                       {isVerifyingOtp ? <Loader2 className="animate-spin" /> : 'Verify'}
-                     </Button>
-                  </div>
-                   <p className="text-sm text-muted-foreground mt-1">Check your email for the verification code. (Hint: it's 123456)</p>
-                   {otpError && <p className="text-sm font-medium text-destructive mt-1">{otpError}</p>}
-                </div>
+              {emailSent && !emailVerified && (
+                <Alert variant="default" className="bg-primary/10 border-primary/20">
+                    <MailCheck className="h-4 w-4 text-primary" />
+                    <AlertTitle className="text-primary">Check Your Inbox</AlertTitle>
+                    <AlertDescription>
+                        A verification link has been sent to <strong>{email}</strong>. Click the link to continue.
+                    </AlertDescription>
+                </Alert>
               )}
 
               <div>
@@ -318,8 +320,8 @@ export function ContactForm() {
                 </div>
               </div>
 
-              <SubmitButton isEmailVerified={otpVerified} />
-               {!otpVerified && <p className="text-center text-sm text-muted-foreground">Please verify your email to join the waitlist.</p>}
+              <SubmitButton isEmailVerified={emailVerified} />
+               {!emailVerified && <p className="text-center text-sm text-muted-foreground">Please verify your email to join the waitlist.</p>}
             </form>
           </CardContent>
         </Card>
