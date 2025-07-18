@@ -1,9 +1,9 @@
 
 'use client';
 
-import { Suspense, useEffect, useActionState } from 'react';
+import { Suspense } from 'react';
 import { useFormStatus } from 'react-dom';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { login } from '@/app/admin/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,11 +11,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-
-const initialState = {
-  error: null,
-  success: false,
-};
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -27,19 +22,8 @@ function SubmitButton() {
 }
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const searchError = searchParams.get('error');
-
-  const [state, formAction] = useActionState(login, initialState);
-
-  useEffect(() => {
-    if (state.success) {
-      router.push('/admin/dashboard');
-    }
-  }, [state.success, router]);
-  
-  const error = state.error || searchError;
+  const error = searchParams.get('error');
 
   return (
     <Card className="w-full max-w-sm">
@@ -48,7 +32,7 @@ function LoginForm() {
         <CardDescription>Enter your credentials to access the dashboard.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="space-y-4">
+        <form action={login} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="username">Username</Label>
             <Input id="username" name="username" required />

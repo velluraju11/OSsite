@@ -11,10 +11,12 @@ export async function login(prevState: any, formData: FormData) {
   const username = formData.get('username') as string;
   const password = formData.get('password') as string;
 
+  if (!SECRET_KEY) {
+    console.error('Authentication secret is not configured on the server.');
+    return redirect('/admin/login?error=Configuration+error');
+  }
+
   if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
-    if (!SECRET_KEY) {
-        return { error: 'Authentication secret is not configured on the server.' };
-    }
     const session = { user: { username } };
     const token = sign(session, SECRET_KEY, { expiresIn: '1h' });
     
@@ -25,9 +27,9 @@ export async function login(prevState: any, formData: FormData) {
       path: '/',
     });
 
-    return { success: true, error: null };
+    redirect('/admin/dashboard');
   } else {
-    return { success: false, error: 'Invalid username or password.' };
+    redirect('/admin/login?error=Invalid+username+or+password');
   }
 }
 
