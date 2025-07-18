@@ -11,7 +11,7 @@ if (!SECRET_KEY) {
   throw new Error('AUTH_SECRET environment variable is not set.');
 }
 
-export async function login(formData: FormData) {
+export async function login(prevState: any, formData: FormData) {
   const username = formData.get('username') as string;
   const password = formData.get('password') as string;
 
@@ -26,9 +26,9 @@ export async function login(formData: FormData) {
       path: '/',
     });
 
-    redirect('/admin/dashboard');
+    return { success: true };
   } else {
-    redirect('/admin/login?error=Invalid%20credentials');
+    return { error: 'Invalid credentials. Please try again.' };
   }
 }
 
