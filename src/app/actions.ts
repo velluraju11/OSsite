@@ -1,6 +1,5 @@
 
 'use server';
-import 'dotenv/config';
 
 import { z } from 'zod';
 import { Submission, ContactFormSchema } from '@/lib/db';
@@ -40,7 +39,7 @@ export async function sendVerificationLinkAction(prevState: any, formData: FormD
       message: 'A verification link has been sent to your email. Please check your inbox.',
     };
   } catch (error: any) {
-    console.error('Firebase Error:', error.code, error.message);
+    console.error('Firebase Error:', error.message);
     if (error.code === 'auth/invalid-action-code-setting') {
         return { error: 'Configuration error: The domain of the link is not authorized. Please add it to your Firebase console.' };
     }
