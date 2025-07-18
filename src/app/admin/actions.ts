@@ -1,6 +1,7 @@
 
 'use server';
 
+require('dotenv').config();
 import { sign, verify } from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
