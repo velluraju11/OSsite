@@ -21,7 +21,7 @@ function SubmitButton() {
   const { pending } = useFormStatus();
 
   return (
-    <Button type="submit" className="w-full text-lg py-6" disabled={pending}>
+    <Button type="submit" className="w-full text-lg py-6 glow-shadow" disabled={pending}>
       {pending ? <Loader2 className="animate-spin" /> : 'Submit Interest'}
     </Button>
   );
@@ -53,9 +53,9 @@ export function ContactForm() {
   }, [state, toast]);
 
   return (
-    <section id="contact" className="w-full py-16 md:py-24 bg-background">
+    <section id="contact" className="w-full py-16 md:py-24 bg-card">
       <div className="container mx-auto px-4 md:px-6">
-        <Card className="max-w-xl mx-auto border-primary/50 shadow-lg shadow-primary/10">
+        <Card className="max-w-xl mx-auto bg-background/50 border-primary/20 shadow-lg shadow-primary/10">
           <CardHeader className="text-center">
             <CardTitle className="font-headline text-3xl">Get Early Access</CardTitle>
             <CardDescription>

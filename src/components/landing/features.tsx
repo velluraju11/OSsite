@@ -46,7 +46,7 @@ const featuresList = [
 
 export function Features() {
   return (
-    <section id="features" className="w-full py-16 md:py-24 bg-background">
+    <section id="features" className="w-full py-16 md:py-24 bg-card">
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center max-w-2xl mx-auto">
           <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl">A New Era of Computing</h2>
@@ -56,13 +56,16 @@ export function Features() {
         </div>
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {featuresList.map((feature, index) => (
-            <Card key={index} className="flex flex-col items-center text-center p-6 bg-card hover:shadow-primary/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-2">
-              <div className="mb-4 p-3 bg-primary/10 rounded-full">{feature.icon}</div>
-              <CardHeader className="p-0">
-                <CardTitle className="font-headline text-xl">{feature.title}</CardTitle>
-              </CardHeader>
-              <CardDescription className="mt-2 flex-grow">{feature.description}</CardDescription>
-            </Card>
+            <div key={index} className="relative group">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
+              <Card className="relative flex flex-col items-center text-center p-6 bg-card h-full">
+                <div className="mb-4 p-3 bg-primary/10 rounded-full">{feature.icon}</div>
+                <CardHeader className="p-0">
+                  <CardTitle className="font-headline text-xl">{feature.title}</CardTitle>
+                </CardHeader>
+                <CardDescription className="mt-2 flex-grow">{feature.description}</CardDescription>
+              </Card>
+            </div>
           ))}
         </div>
       </div>

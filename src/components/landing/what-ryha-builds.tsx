@@ -12,7 +12,7 @@ const buildItems = [
 
 export function WhatRyhaBuilds() {
   return (
-    <section id="what-we-build" className="w-full py-16 md:py-24 bg-card">
+    <section id="what-we-build" className="w-full py-16 md:py-24 bg-background">
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-4">
@@ -23,7 +23,7 @@ export function WhatRyhaBuilds() {
             <ul className="space-y-3 mt-6">
               {buildItems.map((item, index) => (
                 <li key={index} className="flex items-start gap-3">
-                  <div className="bg-primary/10 text-primary rounded-full p-1 mt-1">
+                  <div className="bg-primary text-primary-foreground rounded-full p-1 mt-1 flex-shrink-0">
                     <Check className="w-4 h-4" />
                   </div>
                   <span className="flex-1 text-foreground">{item.text}</span>
@@ -31,8 +31,8 @@ export function WhatRyhaBuilds() {
               ))}
             </ul>
           </div>
-          <div className="bg-background/50 rounded-lg p-6 md:p-8 border border-border">
-            <p className="text-lg md:text-xl font-medium text-foreground leading-relaxed">
+          <div className="bg-card rounded-lg p-8 border border-primary/20 glow-shadow">
+            <p className="text-lg md:text-xl font-medium text-foreground/90 leading-relaxed">
               This is not traditional software. These are AI-native ecosystems that think, work, and evolve — like a human.
             </p>
           </div>
