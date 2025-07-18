@@ -60,21 +60,3 @@ export async function submitInterestForm(prevState: any, formData: FormData) {
     reset: true,
   };
 }
-
-export async function getAiHighlights(userInput: string, engagementLevel: 'low' | 'medium' | 'high'): Promise<SelectFeatureHighlightsOutput> {
-  try {
-    if (!userInput.trim()) {
-      return [];
-    }
-    const highlights = await selectFeatureHighlights({
-      userInput,
-      engagementLevel,
-    });
-    return highlights;
-  } catch (error) {
-    console.error("Error fetching AI highlights:", error);
-    // In a real app, you might want to return a more user-friendly error
-    return [];
-  }
-}
-
