@@ -1,9 +1,9 @@
 
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect, useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
-import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { login } from '@/app/admin/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,10 +21,20 @@ function SubmitButton() {
   );
 }
 
+const initialState = {
+  error: '',
+  success: false,
+};
 
 function LoginForm() {
-  const searchParams = useSearchParams();
-  const error = searchParams.get('error');
+  const router = useRouter();
+  const [state, formAction] = useActionState(login, initialState);
+
+  useEffect(() => {
+    if (state.success) {
+      router.push('/admin/dashboard');
+    }
+  }, [state.success, router]);
 
   return (
     <Card className="w-full max-w-sm">
@@ -33,7 +43,7 @@ function LoginForm() {
         <CardDescription>Enter your credentials to access the dashboard.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={login} className="space-y-4">
+        <form action={formAction} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="username">Username</Label>
             <Input id="username" name="username" required />
@@ -42,10 +52,10 @@ function LoginForm() {
             <Label htmlFor="password">Password</Label>
             <Input id="password" name="password" type="password" required />
           </div>
-          {error && (
+          {state.error && (
             <Alert variant="destructive">
               <AlertTitle>Login Failed</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>{state.error}</AlertDescription>
             </Alert>
           )}
           <SubmitButton />
