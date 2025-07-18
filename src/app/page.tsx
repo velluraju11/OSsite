@@ -1,6 +1,7 @@
 import { Header } from '@/components/landing/header';
 import { Features } from '@/components/landing/features';
 import { WhatRyhaBuilds } from '@/components/landing/what-ryha-builds';
+import { CoreValues } from '@/components/landing/core-values';
 import { AiHighlighter } from '@/components/landing/ai-highlighter';
 import { WhoWeServe } from '@/components/landing/who-we-serve';
 import { ContactForm } from '@/components/landing/contact-form';
@@ -13,6 +14,7 @@ export default function Home() {
         <Header />
         <Features />
         <WhatRyhaBuilds />
+        <CoreValues />
         <AiHighlighter />
         <WhoWeServe />
         <ContactForm />
