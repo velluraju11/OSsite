@@ -34,10 +34,10 @@ function SubmitButton({ isEmailVerified }: { isEmailVerified: boolean }) {
   );
 }
 
-function SendOtpButton() {
+function SendOtpButton({ action }: { action: (payload: FormData) => void }) {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending} className="shrink-0">
+    <Button type="submit" formAction={action} disabled={pending} className="shrink-0">
       {pending ? <Loader2 className="animate-spin" /> : <Send />}
       <span className="ml-2 hidden md:inline">Send OTP</span>
     </Button>
@@ -165,10 +165,7 @@ export function ContactForm() {
                         readOnly={otpSent}
                     />
                     {!otpVerified && !otpSent && (
-                        <form action={sendOtpFormAction} className="flex">
-                            <input type="hidden" name="email" value={email} />
-                            <SendOtpButton />
-                        </form>
+                        <SendOtpButton action={sendOtpFormAction} />
                     )}
                     {otpSent && !otpVerified && <MailCheck className="w-10 h-10 text-primary shrink-0" />}
                     {otpVerified && <ShieldCheck className="w-10 h-10 text-green-500 shrink-0" />}
