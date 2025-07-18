@@ -1,8 +1,9 @@
+
 'use client';
 
-import { useActionState, useEffect } from 'react';
+import { Suspense } from 'react';
 import { useFormStatus } from 'react-dom';
-import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { login } from '@/app/admin/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,44 +21,46 @@ function SubmitButton() {
   );
 }
 
-export default function AdminLoginPage() {
-  const [state, formAction] = useActionState(login, { error: '', success: false });
-  const router = useRouter();
-
-  useEffect(() => {
-    if (state.success) {
-      router.push('/admin/dashboard');
-    }
-  }, [state.success, router]);
-
+function LoginForm() {
+  const searchParams = useSearchParams();
+  const error = searchParams.get('error');
 
   return (
+    <Card className="w-full max-w-sm">
+      <CardHeader>
+        <CardTitle className="text-2xl">Admin Login</CardTitle>
+        <CardDescription>Enter your credentials to access the dashboard.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form action={login} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="username">Username</Label>
+            <Input id="username" name="username" required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input id="password" name="password" type="password" required />
+          </div>
+          {error && (
+            <Alert variant="destructive">
+              <AlertTitle>Login Failed</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          <SubmitButton />
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+
+export default function AdminLoginPage() {
+  return (
     <main className="flex min-h-dvh items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-2xl">Admin Login</CardTitle>
-          <CardDescription>Enter your credentials to access the dashboard.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form action={formAction} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input id="username" name="username" required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" name="password" type="password" required />
-            </div>
-            {state?.error && (
-              <Alert variant="destructive">
-                <AlertTitle>Login Failed</AlertTitle>
-                <AlertDescription>{state.error}</AlertDescription>
-              </Alert>
-            )}
-            <SubmitButton />
-          </form>
-        </CardContent>
-      </Card>
+       <Suspense fallback={<div>Loading...</div>}>
+        <LoginForm />
+      </Suspense>
     </main>
   );
 }
