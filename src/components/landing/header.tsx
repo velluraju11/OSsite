@@ -11,7 +11,10 @@ export function Header() {
            <div className="inline-block rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-4 border border-primary/20 shadow-sm">
             The World’s Smartest Operating System
           </div>
-          <h1 className="font-headline text-6xl font-bold tracking-tight sm:text-7xl md:text-8xl lg:text-9xl bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70 leading-snug">
+          <h1 
+            className="font-headline text-6xl font-bold tracking-tight sm:text-7xl md:text-8xl lg:text-9xl bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70"
+            style={{ lineHeight: 1.2 }}
+          >
             Ryha OS
           </h1>
           <p className="mt-8 max-w-2xl text-lg md:text-xl text-foreground/70">
