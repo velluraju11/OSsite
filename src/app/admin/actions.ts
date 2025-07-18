@@ -7,13 +7,14 @@ import { redirect } from 'next/navigation';
 
 const SECRET_KEY = process.env.AUTH_SECRET;
 
-export async function login(formData: FormData) {
+export async function login(prevState: any, formData: FormData) {
   const username = formData.get('username') as string;
   const password = formData.get('password') as string;
 
   if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
     if (!SECRET_KEY) {
-        throw new Error('AUTH_SECRET is not set in the environment variables.');
+        // This should not happen if the env is set up correctly, but it's a good safeguard.
+        return { error: 'Authentication secret is not configured on the server.' };
     }
     const session = { user: { username } };
     const token = sign(session, SECRET_KEY, { expiresIn: '1h' });
@@ -25,9 +26,9 @@ export async function login(formData: FormData) {
       path: '/',
     });
 
-    redirect('/admin/dashboard');
+    return { success: true };
   } else {
-    redirect('/admin/login?error=Invalid%20username%20or%20password.');
+    return { error: 'Invalid username or password.' };
   }
 }
 
