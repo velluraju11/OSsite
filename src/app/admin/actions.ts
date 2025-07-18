@@ -13,7 +13,6 @@ export async function login(prevState: any, formData: FormData) {
 
   if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
     if (!SECRET_KEY) {
-        // This should not happen if the env is set up correctly, but it's a good safeguard.
         return { error: 'Authentication secret is not configured on the server.' };
     }
     const session = { user: { username } };
@@ -26,9 +25,9 @@ export async function login(prevState: any, formData: FormData) {
       path: '/',
     });
 
-    return { success: true };
+    return { success: true, error: null };
   } else {
-    return { error: 'Invalid username or password.' };
+    return { success: false, error: 'Invalid username or password.' };
   }
 }
 
@@ -45,7 +44,6 @@ export async function getSession() {
     return null;
   }
   try {
-    // The type assertion is necessary here because verify can return a string or object.
     const session = verify(sessionCookie, SECRET_KEY) as { user: { username: string } };
     return session;
   } catch (error) {

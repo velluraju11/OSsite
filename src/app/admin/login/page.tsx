@@ -13,7 +13,7 @@ import { Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const initialState = {
-  error: '',
+  error: null,
   success: false,
 };
 
