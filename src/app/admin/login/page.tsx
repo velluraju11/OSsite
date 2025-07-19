@@ -26,7 +26,7 @@ export default function LoginPage({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="grid gap-4">
+          <form action={login} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -41,7 +41,7 @@ export default function LoginPage({
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" name="password" required />
             </div>
-            <Button formAction={login} className="w-full">
+            <Button type="submit" className="w-full">
               Login
             </Button>
             {searchParams.message && (
