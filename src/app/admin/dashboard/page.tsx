@@ -76,7 +76,7 @@ export default async function DashboardPage() {
                 <CardDescription>View and manage waitlist submissions for Ryha OS.</CardDescription>
               </div>
                <form action={signOut}>
-                <Button variant="outline">
+                <Button type="submit" variant="outline">
                   <LogOut className="mr-2 h-4 w-4" />
                   Logout
                 </Button>
