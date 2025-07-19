@@ -90,7 +90,7 @@ export default async function DashboardPage() {
                   <AlertTitle>Database Error</AlertTitle>
                   <AlertDescription>
                     {error}
-                  </AlertDescription>
+                  </Aler tDescription>
                 </Alert>
               )}
             <Table>
