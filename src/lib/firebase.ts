@@ -4,7 +4,7 @@ import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 // Hardcoded public Firebase configuration for project 'ryha-os'
 // This is used to ensure the client-side application can always connect to Firebase.
 const firebaseConfig = {
-  apiKey: "AIzaSyA5X7s-t8q4Y1Z9f7o3Bv2c_r6E9wX5K1s", // Correct API key
+  apiKey: "AIzaSyB-bY2F_E5j6V8p9T3q7L1wRzK4oI0a_sC",
   authDomain: "ryha-os.firebaseapp.com",
   projectId: "ryha-os",
   storageBucket: "ryha-os.appspot.com",
