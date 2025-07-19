@@ -11,10 +11,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Eye } from 'lucide-react';
+import { Eye, LogOut } from 'lucide-react';
 import type { Submission as SubmissionType } from '@/lib/db';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+import { signOut } from './actions';
 
 
 function ViewSubmissionDialog({ submission }: { submission: SubmissionType }) {
@@ -53,6 +56,13 @@ function ViewSubmissionDialog({ submission }: { submission: SubmissionType }) {
 }
 
 export default async function DashboardPage() {
+  const supabase = createClient();
+
+  const { data, error: authError } = await supabase.auth.getUser();
+  if (authError || !data?.user) {
+    redirect('/admin/login');
+  }
+  
   const { submissions, error } = await fetchSubmissions();
 
   return (
@@ -65,6 +75,12 @@ export default async function DashboardPage() {
                 <CardTitle>Admin Dashboard</CardTitle>
                 <CardDescription>View and manage waitlist submissions for Ryha OS.</CardDescription>
               </div>
+               <form action={signOut}>
+                <Button variant="outline">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </Button>
+              </form>
             </div>
           </CardHeader>
           <CardContent>

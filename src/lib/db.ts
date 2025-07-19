@@ -1,6 +1,6 @@
 
 import { z } from 'zod';
-import { createClient } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 
 // Schema for database interaction and form validation
 const phoneRegex = new RegExp(
@@ -29,13 +29,13 @@ export const ContactFormSchema = z.object({
 export type Submission = z.infer<typeof ContactFormSchema> & { id: number; created_at: string; };
 type SubmissionInput = z.infer<typeof ContactFormSchema>;
 
-const supabase = createClient();
 const NO_SUPABASE_ERROR = "Supabase is not configured. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your .env.local file.";
 
 
 // A Submission class to encapsulate database logic
 export class Submission {
   static async create(data: SubmissionInput): Promise<{ submission: Submission | null, error: any }> {
+    const supabase = createClient();
     if (!supabase) return { submission: null, error: { message: NO_SUPABASE_ERROR } };
 
     const { data: submission, error } = await supabase
@@ -48,6 +48,7 @@ export class Submission {
   }
 
   static async getAll(): Promise<{ submissions: Submission[], error: string | null }> {
+    const supabase = createClient();
     if (!supabase) return { submissions: [], error: NO_SUPABASE_ERROR };
 
     const { data, error } = await supabase
@@ -64,6 +65,7 @@ export class Submission {
   }
 
   static async isUsernameTaken(username: string): Promise<{ isUsernameTaken: boolean, error: string | null }> {
+    const supabase = createClient();
     if (!supabase) return { isUsernameTaken: false, error: NO_SUPABASE_ERROR };
     
     const { data, error } = await supabase

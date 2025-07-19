@@ -18,3 +18,6 @@ export function createClient() {
     
     return createSupabaseClient(supabaseUrl, supabaseAnonKey)
 }
+
+// This is deprecated and will be removed. Use createClient() instead.
+export const supabase = createClient();
