@@ -14,8 +14,8 @@ export const ContactFormSchema = z.object({
   mobile: z.string().regex(phoneRegex, 'Invalid mobile number.'),
   designation: z.string({ required_error: 'Please select a designation.'}),
   otherDesignation: z.string().nullable(),
-  features: z.string().min(1, { message: 'Please tell us what features you want.'}),
-  reason: z.string().min(1, { message: 'Please tell us why you want Ryha OS.'}),
+  features: z.string().min(10, { message: 'Please provide more detail about the features you want.'}),
+  reason: z.string().min(10, { message: 'Please provide more detail about why you want Ryha OS.'}),
 }).refine(data => {
   if (data.designation === 'other' && (!data.otherDesignation || data.otherDesignation.trim() === '')) {
     return false;
@@ -27,7 +27,7 @@ export const ContactFormSchema = z.object({
 });
 
 export type Submission = z.infer<typeof ContactFormSchema> & { id: number; created_at: string; };
-type SubmissionInput = z.infer<typeof ContactFormSchema>;
+export type SubmissionInput = z.infer<typeof ContactFormSchema>;
 
 const NO_SUPABASE_ERROR = "Supabase is not configured. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your .env.local file.";
 
