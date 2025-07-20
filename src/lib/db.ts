@@ -11,7 +11,7 @@ export const ContactFormSchema = z.object({
   fullName: z.string().min(2, { message: 'Name must be at least 2 characters.' }).max(50, { message: 'Name must be 50 characters or less.' }),
   username: z.string().min(3, { message: 'Username must be at least 3 characters.' }).max(20, { message: 'Username must be 20 characters or less.' }).regex(/^[a-zA-Z0-9]+$/, { message: 'Username can only contain letters and numbers.' }),
   email: z.string().email({ message: 'Please enter a valid email address.' }),
-  mobile: z.string().regex(phoneRegex, 'Invalid mobile number.'),
+  mobile: z.string().regex(phoneRegex, 'Invalid mobile number.').min(10, { message: "Mobile number must be at least 10 digits."}),
   designation: z.string({ required_error: 'Please select a designation.'}),
   otherDesignation: z.string().nullable(),
   features: z.string().min(10, { message: 'Please provide more detail about the features you want.'}),
@@ -98,5 +98,23 @@ export class Submission {
     }
 
     return { isEmailTaken: !!data, error: null };
+  }
+
+  static async isMobileTaken(mobile: string): Promise<{ isMobileTaken: boolean, error: string | null }> {
+    const supabase = createClient();
+    if (!supabase) return { isMobileTaken: false, error: NO_SUPABASE_ERROR };
+    
+    const { data, error } = await supabase
+        .from('submissions')
+        .select('id')
+        .eq('mobile', mobile)
+        .maybeSingle();
+
+    if (error) {
+        console.error("Supabase error checking mobile:", error);
+        return { isMobileTaken: false, error: "Could not verify mobile number." };
+    }
+
+    return { isMobileTaken: !!data, error: null };
   }
 }

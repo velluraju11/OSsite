@@ -48,6 +48,16 @@ export async function submitInterestForm(prevState: any, formData: FormData) {
       };
     }
 
+    const { isMobileTaken, error: mobileError } = await Submission.isMobileTaken(submissionData.mobile);
+    if (mobileError) throw new Error(mobileError);
+    if (isMobileTaken) {
+      return {
+        errors: { mobile: ['This mobile number has already been submitted.'] },
+        message: 'Please use a different mobile number.',
+        reset: false,
+      };
+    }
+
     const { error } = await Submission.create(submissionData);
 
     if (error) {
