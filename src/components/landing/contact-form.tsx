@@ -383,7 +383,7 @@ export function ContactForm() {
                    {usernameStatus === 'invalid' && <p className="text-sm font-medium text-destructive mt-1">Username can only contain lowercase letters and numbers.</p>}
                 </div>
                 <div id="username-status" aria-live="polite">
-                    <FieldValidationStatus status={usernameStatus} checkingText="Checking username..." takenText={isUsernameForbidden ? "This name can not be entered because this name is the most hated name by the ryha founder and the reason behind this will shared with all users during publishing time" : "Username is already taken."} availableText="Username is available." />
+                    <FieldValidationStatus status={usernameStatus} checkingText="Checking username..." takenText={isUsernameForbidden ? "This name cannot be entered because it is the most hated name by the founder of Ryha. The reason behind this will be shared with all users at the time of publishing" : "Username is already taken."} availableText="Username is available." />
                 </div>
               </div>
 
