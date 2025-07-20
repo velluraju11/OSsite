@@ -1,0 +1,28 @@
+
+[build]
+  # This section tells the secrets scanner to ignore these specific keys.
+  # These keys are safe to expose in the browser and are required for the
+  # Firebase and Supabase client-side SDKs to function.
+  ignore = """
+    NEXT_PUBLIC_FIREBASE_API_KEY,
+    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    NEXT_PUBLIC_FIREBASE_APP_ID,
+    NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY
+  """
+
+[build.environment]
+  # This explicitly tells Netlify which Node.js version to use for builds,
+  # ensuring consistency and preventing version-related errors.
+  NODE_VERSION = "20"
+
+# The command to build the Next.js site.
+[build.command]
+  command = "npm run build"
+
+# The directory where the built site is located.
+[build.publish]
+  publish = ".next"
