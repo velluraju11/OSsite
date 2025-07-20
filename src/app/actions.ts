@@ -4,6 +4,8 @@
 import { z } from 'zod';
 import { Submission, ContactFormSchema } from '@/lib/db';
 
+const forbiddenUsernames = ['narmatha', 'narmata', 'narmadha', 'narmada'];
+
 export async function submitInterestForm(prevState: any, formData: FormData) {
   const validatedFields = ContactFormSchema.safeParse({
     fullName: formData.get('fullName'),
@@ -28,6 +30,30 @@ export async function submitInterestForm(prevState: any, formData: FormData) {
   try {
     const submissionData = validatedFields.data;
     
+    // Forbidden name checks
+    if (forbiddenUsernames.some(name => submissionData.fullName.toLowerCase().includes(name))) {
+      return {
+        errors: { fullName: ['This name is not permitted.'] },
+        message: 'A forbidden name was used in the Full Name field.',
+        reset: false,
+      };
+    }
+     if (forbiddenUsernames.some(name => submissionData.email.toLowerCase().includes(name))) {
+      return {
+        errors: { email: ['This name is not permitted in the email.'] },
+        message: 'A forbidden name was used in the Email field.',
+        reset: false,
+      };
+    }
+    if (forbiddenUsernames.some(name => submissionData.username.toLowerCase().includes(name))) {
+      return {
+        errors: { username: ['This username is not permitted.'] },
+        message: 'A forbidden name was used in the Username field.',
+        reset: false,
+      };
+    }
+
+
     const { isUsernameTaken, error: usernameError } = await Submission.isUsernameTaken(submissionData.username);
     if(usernameError) throw new Error(usernameError);
     if(isUsernameTaken) {

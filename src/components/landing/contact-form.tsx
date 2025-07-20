@@ -36,18 +36,19 @@ function SubmitButton({ isEmailVerified, isFormValid }: { isEmailVerified: boole
   );
 }
 
-const FieldValidationStatus = ({ status, checkingText, takenText, availableText }: { status: 'idle' | 'checking' | 'taken' | 'available' | 'invalid', checkingText: string, takenText: string, availableText: string }) => {
+const FieldValidationStatus = ({ status, checkingText, takenText, availableText, customError }: { status: 'idle' | 'checking' | 'taken' | 'available' | 'invalid', checkingText: string, takenText: string, availableText: string, customError?: string | null }) => {
     if (status === 'checking') {
         return <p className="text-sm text-muted-foreground mt-1 flex items-center"><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {checkingText}</p>;
     }
-    if (status === 'taken') {
-        return <p className="text-sm font-medium text-destructive mt-1 flex items-center"><XCircle className="w-4 h-4 mr-2" /> {takenText}</p>;
+    if (status === 'taken' || customError) {
+        return <p className="text-sm font-medium text-destructive mt-1 flex items-center"><XCircle className="w-4 h-4 mr-2" /> {customError || takenText}</p>;
     }
     if (status === 'available') {
         return <p className="text-sm font-medium text-green-500 mt-1 flex items-center"><CheckCircle className="w-4 h-4 mr-2" /> {availableText}</p>;
     }
     return null;
 };
+
 
 // Custom hook for debouncing
 function useDebounce(callback: (...args: any[]) => void, delay: number) {
@@ -82,14 +83,17 @@ export function ContactForm() {
   const [isVerifying, setIsVerifying] = useState(true);
 
   // Field values
+  const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [mobile, setMobile] = useState('');
   const [reason, setReason] = useState('');
   
   // Real-time validation state
+  const [fullNameError, setFullNameError] = useState<string | null>(null);
   const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'taken' | 'available' | 'invalid'>('idle');
   const [emailStatus, setEmailStatus] = useState<'idle' | 'checking' | 'taken' | 'available' | 'invalid'>('idle');
+  const [emailCustomError, setEmailCustomError] = useState<string | null>(null);
   const [mobileStatus, setMobileStatus] = useState<'idle' | 'checking' | 'taken' | 'available' | 'invalid'>('idle');
   
   // State for the special username reason feature
@@ -120,6 +124,15 @@ export function ContactForm() {
         setEmailStatus('idle');
         return;
     }
+    const isForbidden = forbiddenUsernames.some(name => value.toLowerCase().includes(name));
+    if (isForbidden) {
+        setHasTriggeredReason(true);
+        setEmailCustomError('This name cannot be entered in an email address.');
+        setEmailStatus('taken');
+        return;
+    }
+    setEmailCustomError(null);
+
     if (value === emailForVerification && emailVerified) {
         setEmailStatus('available');
         return;
@@ -205,6 +218,7 @@ export function ContactForm() {
       if (submitState.reset) {
           formRef.current?.reset();
           setShowOtherDesignation(false);
+          setFullName('');
           setEmail('');
           setEmailForVerification('');
           setEmailSent(false);
@@ -212,8 +226,10 @@ export function ContactForm() {
           setUsername('');
           setMobile('');
           setReason('');
+          setFullNameError(null);
           setUsernameStatus('idle');
           setEmailStatus('idle');
+          setEmailCustomError(null);
           setMobileStatus('idle');
           setHasTriggeredReason(false);
           setReasonQueryChecked(false);
@@ -221,6 +237,18 @@ export function ContactForm() {
     }
   }, [submitState, isSubmitPending, toast]);
   
+  const handleFullNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFullName(value);
+    const isForbidden = forbiddenUsernames.some(name => value.toLowerCase().includes(name));
+    if (isForbidden) {
+        setHasTriggeredReason(true);
+        setFullNameError('This name cannot be entered because it is the most hated name by the founder of Ryha.');
+    } else {
+        setFullNameError(null);
+    }
+  };
+
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.toLowerCase();
     setUsername(value);
@@ -253,8 +281,8 @@ export function ContactForm() {
       setEmailVerificationError('Please enter your email address.');
       return;
     }
-    if (emailStatus === 'taken') {
-      setEmailVerificationError('This email is already on the waitlist.');
+    if (emailStatus === 'taken' || emailCustomError) {
+      setEmailVerificationError('This email address is not valid for submission.');
       return;
     }
     
@@ -319,7 +347,12 @@ export function ContactForm() {
   };
   
   const isUsernameForbidden = forbiddenUsernames.some(name => username.toLowerCase().includes(name));
-  const isFormValid = usernameStatus === 'available' && emailStatus === 'available' && mobileStatus === 'available' && !isUsernameForbidden;
+  const isFormValid = 
+    usernameStatus === 'available' && 
+    emailStatus === 'available' && 
+    mobileStatus === 'available' &&
+    !fullNameError &&
+    !isUsernameForbidden;
 
 
   if (isVerifying) {
@@ -360,9 +393,19 @@ export function ContactForm() {
             <form ref={formRef} action={submitFormAction} className="space-y-6">
               <div>
                 <Label htmlFor="fullName">Full Name</Label>
-                <Input id="fullName" name="fullName" placeholder="Enter your real name" required aria-describedby="fullName-error" />
+                <Input 
+                  id="fullName" 
+                  name="fullName" 
+                  placeholder="Enter your real name" 
+                  required 
+                  aria-describedby="fullName-error"
+                  value={fullName}
+                  onChange={handleFullNameChange}
+                  className={cn((submitState.errors?.fullName || fullNameError) && 'border-destructive focus-visible:ring-destructive')}
+                 />
                 <div id="fullName-error" aria-live="polite">
                   {submitState.errors?.fullName && <p className="text-sm font-medium text-destructive mt-1">{submitState.errors.fullName[0]}</p>}
+                  {fullNameError && <p className="text-sm font-medium text-destructive mt-1 flex items-center"><XCircle className="w-4 h-4 mr-2" /> {fullNameError}</p>}
                 </div>
               </div>
               
@@ -384,7 +427,7 @@ export function ContactForm() {
                    {usernameStatus === 'invalid' && <p className="text-sm font-medium text-destructive mt-1">Username can only contain lowercase letters and numbers.</p>}
                 </div>
                 <div id="username-status" aria-live="polite">
-                    <FieldValidationStatus status={usernameStatus} checkingText="Checking username..." takenText={isUsernameForbidden ? "This name cannot be entered because it is the most hated name by the founder of Ryha. The reason behind this will be shared with all users at the time of publishing" : "Username is already taken."} availableText="Username is available." />
+                    <FieldValidationStatus status={usernameStatus} checkingText="Checking username..." takenText="This name cannot be entered because it is the most hated name by the founder of Ryha. The reason behind this will be shared with all users at the time of publishing" availableText="Username is available." />
                 </div>
               </div>
 
@@ -419,7 +462,7 @@ export function ContactForm() {
                     {emailVerificationError && !emailVerified && <p className="text-sm font-medium text-destructive mt-1">{emailVerificationError}</p>}
                  </div>
                  <div id="email-status" aria-live="polite">
-                    <FieldValidationStatus status={emailStatus} checkingText="Checking email..." takenText="Email is already on the waitlist." availableText="Email is available to use." />
+                    <FieldValidationStatus status={emailStatus} checkingText="Checking email..." takenText="Email is already on the waitlist." availableText="Email is available to use." customError={emailCustomError} />
                  </div>
               </div>
               
