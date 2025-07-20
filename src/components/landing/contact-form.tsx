@@ -203,9 +203,9 @@ export function ContactForm() {
   }, [submitState, isSubmitPending, toast]);
   
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+    const value = e.target.value.toLowerCase();
     setUsername(value);
-    const regex = /^[a-zA-Z0-9]*$/;
+    const regex = /^[a-z0-9]*$/;
     if (regex.test(value)) {
       setUsernameStatus('idle');
       debouncedCheckUsername(value);
@@ -335,10 +335,10 @@ export function ContactForm() {
                   onChange={handleUsernameChange}
                   className={cn( (submitState.errors?.username || usernameStatus === 'taken' || usernameStatus === 'invalid') && 'border-destructive focus-visible:ring-destructive')}
                 />
-                 <p className="text-sm text-muted-foreground mt-1">This will be your unique identifier. Only letters and numbers are allowed.</p>
+                 <p className="text-sm text-muted-foreground mt-1">This will be your unique identifier. Only lowercase letters and numbers are allowed.</p>
                 <div id="username-error" aria-live="polite">
                   {submitState.errors?.username && <p className="text-sm font-medium text-destructive mt-1">{submitState.errors.username[0]}</p>}
-                   {usernameStatus === 'invalid' && <p className="text-sm font-medium text-destructive mt-1">Username can only contain letters and numbers.</p>}
+                   {usernameStatus === 'invalid' && <p className="text-sm font-medium text-destructive mt-1">Username can only contain lowercase letters and numbers.</p>}
                 </div>
                 <div id="username-status" aria-live="polite">
                     <FieldValidationStatus status={usernameStatus} checkingText="Checking username..." takenText="Username is already taken." availableText="Username is available." />

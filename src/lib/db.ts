@@ -9,7 +9,7 @@ const phoneRegex = new RegExp(
 
 export const ContactFormSchema = z.object({
   fullName: z.string().min(2, { message: 'Name must be at least 2 characters.' }).max(50, { message: 'Name must be 50 characters or less.' }),
-  username: z.string().min(3, { message: 'Username must be at least 3 characters.' }).max(20, { message: 'Username must be 20 characters or less.' }).regex(/^[a-zA-Z0-9]+$/, { message: 'Username can only contain letters and numbers.' }),
+  username: z.string().min(3, { message: 'Username must be at least 3 characters.' }).max(20, { message: 'Username must be 20 characters or less.' }).regex(/^[a-z0-9]+$/, { message: 'Username can only contain lowercase letters and numbers.' }),
   email: z.string().email({ message: 'Please enter a valid email address.' }),
   mobile: z.string().regex(phoneRegex, 'Invalid mobile number.').min(10, { message: "Mobile number must be at least 10 digits."}),
   designation: z.string({ required_error: 'Please select a designation.'}),
