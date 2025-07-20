@@ -93,7 +93,7 @@ export function ContactForm() {
   const [mobileStatus, setMobileStatus] = useState<'idle' | 'checking' | 'taken' | 'available' | 'invalid'>('idle');
   
   // State for the special username reason feature
-  const [showReasonCheckbox, setShowReasonCheckbox] = useState(false);
+  const [hasTriggeredReason, setHasTriggeredReason] = useState(false);
   const [reasonQueryChecked, setReasonQueryChecked] = useState(false);
 
 
@@ -102,12 +102,14 @@ export function ContactForm() {
       setUsernameStatus('idle');
       return;
     }
-    if (forbiddenUsernames.includes(value.toLowerCase())) {
+
+    const isForbidden = forbiddenUsernames.some(name => value.toLowerCase().includes(name));
+    if (isForbidden) {
+        setHasTriggeredReason(true);
         setUsernameStatus('taken');
-        setShowReasonCheckbox(true);
         return;
     }
-    setShowReasonCheckbox(false);
+    
     setUsernameStatus('checking');
     const taken = await isUsernameTaken(value);
     setUsernameStatus(taken ? 'taken' : 'available');
@@ -213,7 +215,7 @@ export function ContactForm() {
           setUsernameStatus('idle');
           setEmailStatus('idle');
           setMobileStatus('idle');
-          setShowReasonCheckbox(false);
+          setHasTriggeredReason(false);
           setReasonQueryChecked(false);
       }
     }
@@ -228,7 +230,6 @@ export function ContactForm() {
       debouncedCheckUsername(value);
     } else {
       setUsernameStatus('invalid');
-      setShowReasonCheckbox(false);
     }
   };
 
@@ -317,7 +318,7 @@ export function ContactForm() {
     }
   };
   
-  const isUsernameForbidden = forbiddenUsernames.includes(username.toLowerCase());
+  const isUsernameForbidden = forbiddenUsernames.some(name => username.toLowerCase().includes(name));
   const isFormValid = usernameStatus === 'available' && emailStatus === 'available' && mobileStatus === 'available' && !isUsernameForbidden;
 
 
@@ -510,7 +511,7 @@ export function ContactForm() {
                 </div>
               </div>
               
-              {showReasonCheckbox && (
+              {hasTriggeredReason && (
                 <div className="items-top flex space-x-2">
                   <Checkbox 
                     id="reason-query" 

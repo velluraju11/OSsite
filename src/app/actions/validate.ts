@@ -8,7 +8,9 @@ const forbiddenUsernames = ['narmatha', 'narmata', 'narmadha', 'narmada'];
 export async function isUsernameTaken(username: string): Promise<boolean> {
     if (!username) return false;
     
-    if (forbiddenUsernames.includes(username.toLowerCase())) {
+    // Check if the username contains any of the forbidden substrings.
+    const isForbidden = forbiddenUsernames.some(name => username.toLowerCase().includes(name));
+    if (isForbidden) {
         return true;
     }
 
