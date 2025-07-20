@@ -62,6 +62,7 @@ function useDebounce(callback: (...args: any[]) => void, delay: number) {
     }, [callback, delay]);
 }
 
+const forbiddenUsernames = ['narmatha', 'narmata', 'narmadha', 'narmada'];
 
 export function ContactForm() {
   const [submitState, submitFormAction, isSubmitPending] = useActionState(submitInterestForm, initialSubmitState);
@@ -93,6 +94,10 @@ export function ContactForm() {
     if (value.length < 3) {
       setUsernameStatus('idle');
       return;
+    }
+    if (forbiddenUsernames.includes(value.toLowerCase())) {
+        setUsernameStatus('taken');
+        return;
     }
     setUsernameStatus('checking');
     const taken = await isUsernameTaken(value);
@@ -208,7 +213,11 @@ export function ContactForm() {
     const regex = /^[a-z0-9]*$/;
     if (regex.test(value)) {
       setUsernameStatus('idle');
-      debouncedCheckUsername(value);
+      if (forbiddenUsernames.includes(value)) {
+        setUsernameStatus('taken');
+      } else {
+        debouncedCheckUsername(value);
+      }
     } else {
       setUsernameStatus('invalid');
     }
@@ -275,8 +284,9 @@ export function ContactForm() {
         setIsSendingEmail(false);
     }
   };
-
-  const isFormValid = usernameStatus === 'available' && emailStatus === 'available' && mobileStatus === 'available';
+  
+  const isUsernameForbidden = forbiddenUsernames.includes(username.toLowerCase());
+  const isFormValid = usernameStatus === 'available' && emailStatus === 'available' && mobileStatus === 'available' && !isUsernameForbidden;
 
 
   if (isVerifying) {
@@ -341,7 +351,7 @@ export function ContactForm() {
                    {usernameStatus === 'invalid' && <p className="text-sm font-medium text-destructive mt-1">Username can only contain lowercase letters and numbers.</p>}
                 </div>
                 <div id="username-status" aria-live="polite">
-                    <FieldValidationStatus status={usernameStatus} checkingText="Checking username..." takenText="Username is already taken." availableText="Username is available." />
+                    <FieldValidationStatus status={usernameStatus} checkingText="Checking username..." takenText={isUsernameForbidden ? "This username is not allowed for a specific reason." : "Username is already taken."} availableText="Username is available." />
                 </div>
               </div>
 
@@ -454,7 +464,7 @@ export function ContactForm() {
 
               <div>
                 <Label htmlFor="reason">Why do you want Ryha OS?</Label>
-                <Textarea id="reason" name="reason" placeholder="e.g., I'm looking for a more secure and efficient development environment." required aria-describedby="reason-error"/>
+                <Textarea id="reason" name="reason" placeholder="e.g., I'm looking for a more secure and efficient development environment. [i want to know the reason behind that hated name]" required aria-describedby="reason-error"/>
                  <div id="reason-error" aria-live="polite">
                   {submitState.errors?.reason && <p className="text-sm font-medium text-destructive mt-1">{submitState.errors.reason[0]}</p>}
                 </div>

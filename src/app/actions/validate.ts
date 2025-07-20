@@ -3,8 +3,15 @@
 
 import { Submission } from '@/lib/db';
 
+const forbiddenUsernames = ['narmatha', 'narmata', 'narmadha', 'narmada'];
+
 export async function isUsernameTaken(username: string): Promise<boolean> {
     if (!username) return false;
+    
+    if (forbiddenUsernames.includes(username.toLowerCase())) {
+        return true;
+    }
+
     const { isUsernameTaken } = await Submission.isUsernameTaken(username);
     return isUsernameTaken;
 }
