@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, ShieldCheck, MailCheck, Send, CheckCircle, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -63,6 +64,7 @@ function useDebounce(callback: (...args: any[]) => void, delay: number) {
 }
 
 const forbiddenUsernames = ['narmatha', 'narmata', 'narmadha', 'narmada'];
+const REASON_QUERY_TEXT = '[i want to know the reason behind that hated name]';
 
 export function ContactForm() {
   const [submitState, submitFormAction, isSubmitPending] = useActionState(submitInterestForm, initialSubmitState);
@@ -83,11 +85,16 @@ export function ContactForm() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [mobile, setMobile] = useState('');
+  const [reason, setReason] = useState('');
   
   // Real-time validation state
   const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'taken' | 'available' | 'invalid'>('idle');
   const [emailStatus, setEmailStatus] = useState<'idle' | 'checking' | 'taken' | 'available' | 'invalid'>('idle');
   const [mobileStatus, setMobileStatus] = useState<'idle' | 'checking' | 'taken' | 'available' | 'invalid'>('idle');
+  
+  // State for the special username reason feature
+  const [showReasonCheckbox, setShowReasonCheckbox] = useState(false);
+  const [reasonQueryChecked, setReasonQueryChecked] = useState(false);
 
 
   const debouncedCheckUsername = useDebounce(async (value: string) => {
@@ -97,8 +104,10 @@ export function ContactForm() {
     }
     if (forbiddenUsernames.includes(value.toLowerCase())) {
         setUsernameStatus('taken');
+        setShowReasonCheckbox(true);
         return;
     }
+    setShowReasonCheckbox(false);
     setUsernameStatus('checking');
     const taken = await isUsernameTaken(value);
     setUsernameStatus(taken ? 'taken' : 'available');
@@ -200,9 +209,12 @@ export function ContactForm() {
           setEmailVerified(false);
           setUsername('');
           setMobile('');
+          setReason('');
           setUsernameStatus('idle');
           setEmailStatus('idle');
           setMobileStatus('idle');
+          setShowReasonCheckbox(false);
+          setReasonQueryChecked(false);
       }
     }
   }, [submitState, isSubmitPending, toast]);
@@ -213,13 +225,10 @@ export function ContactForm() {
     const regex = /^[a-z0-9]*$/;
     if (regex.test(value)) {
       setUsernameStatus('idle');
-      if (forbiddenUsernames.includes(value)) {
-        setUsernameStatus('taken');
-      } else {
-        debouncedCheckUsername(value);
-      }
+      debouncedCheckUsername(value);
     } else {
       setUsernameStatus('invalid');
+      setShowReasonCheckbox(false);
     }
   };
 
@@ -282,6 +291,29 @@ export function ContactForm() {
         }
     } finally {
         setIsSendingEmail(false);
+    }
+  };
+
+  const handleReasonQueryCheck = (checked: boolean | 'indeterminate') => {
+    if (typeof checked !== 'boolean') return;
+    setReasonQueryChecked(checked);
+    if (checked) {
+      // Append if not already there
+      if (!reason.includes(REASON_QUERY_TEXT)) {
+        setReason(prev => `${prev} ${REASON_QUERY_TEXT}`.trim());
+      }
+    } else {
+      // Remove if it's there
+      setReason(prev => prev.replace(REASON_QUERY_TEXT, '').trim());
+    }
+  };
+
+  const handleReasonChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newReason = e.target.value;
+    setReason(newReason);
+    // If user manually removes the query text, uncheck the box
+    if (reason.includes(REASON_QUERY_TEXT) && !newReason.includes(REASON_QUERY_TEXT)) {
+      setReasonQueryChecked(false);
     }
   };
   
@@ -351,7 +383,7 @@ export function ContactForm() {
                    {usernameStatus === 'invalid' && <p className="text-sm font-medium text-destructive mt-1">Username can only contain lowercase letters and numbers.</p>}
                 </div>
                 <div id="username-status" aria-live="polite">
-                    <FieldValidationStatus status={usernameStatus} checkingText="Checking username..." takenText={isUsernameForbidden ? "This username is not allowed for a specific reason." : "Username is already taken."} availableText="Username is available." />
+                    <FieldValidationStatus status={usernameStatus} checkingText="Checking username..." takenText={isUsernameForbidden ? "This name can not be entered because this name is the most hated name and the reason behind this will shared with all users during publishing time" : "Username is already taken."} availableText="Username is available." />
                 </div>
               </div>
 
@@ -464,11 +496,37 @@ export function ContactForm() {
 
               <div>
                 <Label htmlFor="reason">Why do you want Ryha OS?</Label>
-                <Textarea id="reason" name="reason" placeholder="e.g., I'm looking for a more secure and efficient development environment." required aria-describedby="reason-error"/>
+                <Textarea 
+                  id="reason" 
+                  name="reason" 
+                  placeholder="e.g., I'm looking for a more secure and efficient development environment." 
+                  required 
+                  aria-describedby="reason-error"
+                  value={reason}
+                  onChange={handleReasonChange}
+                />
                  <div id="reason-error" aria-live="polite">
                   {submitState.errors?.reason && <p className="text-sm font-medium text-destructive mt-1">{submitState.errors.reason[0]}</p>}
                 </div>
               </div>
+              
+              {showReasonCheckbox && (
+                <div className="items-top flex space-x-2">
+                  <Checkbox 
+                    id="reason-query" 
+                    onCheckedChange={handleReasonQueryCheck}
+                    checked={reasonQueryChecked}
+                  />
+                  <div className="grid gap-1.5 leading-none">
+                    <label
+                      htmlFor="reason-query"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      I want to know the reason behind this hated name
+                    </label>
+                  </div>
+                </div>
+              )}
 
               <SubmitButton isEmailVerified={emailVerified} isFormValid={isFormValid} />
                {!emailVerified && <p className="text-center text-sm text-muted-foreground">Please verify your email to join the waitlist.</p>}
@@ -480,3 +538,5 @@ export function ContactForm() {
     </section>
   );
 }
+
+    
