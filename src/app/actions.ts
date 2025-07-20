@@ -38,6 +38,16 @@ export async function submitInterestForm(prevState: any, formData: FormData) {
       };
     }
 
+    const { isEmailTaken, error: emailError } = await Submission.isEmailTaken(submissionData.email);
+    if (emailError) throw new Error(emailError);
+    if (isEmailTaken) {
+      return {
+        errors: { email: ['This email address has already been submitted.'] },
+        message: 'Please use a different email address.',
+        reset: false,
+      };
+    }
+
     const { error } = await Submission.create(submissionData);
 
     if (error) {

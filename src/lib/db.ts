@@ -81,4 +81,22 @@ export class Submission {
 
     return { isUsernameTaken: !!data, error: null };
   }
+  
+  static async isEmailTaken(email: string): Promise<{ isEmailTaken: boolean, error: string | null }> {
+    const supabase = createClient();
+    if (!supabase) return { isEmailTaken: false, error: NO_SUPABASE_ERROR };
+    
+    const { data, error } = await supabase
+        .from('submissions')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle();
+
+    if (error) {
+        console.error("Supabase error checking email:", error);
+        return { isEmailTaken: false, error: "Could not verify email." };
+    }
+
+    return { isEmailTaken: !!data, error: null };
+  }
 }
