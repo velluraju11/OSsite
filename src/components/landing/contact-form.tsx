@@ -464,7 +464,7 @@ export function ContactForm() {
 
               <div>
                 <Label htmlFor="reason">Why do you want Ryha OS?</Label>
-                <Textarea id="reason" name="reason" placeholder="e.g., I'm looking for a more secure and efficient development environment. [i want to know the reason behind that hated name]" required aria-describedby="reason-error"/>
+                <Textarea id="reason" name="reason" placeholder="e.g., I'm looking for a more secure and efficient development environment." required aria-describedby="reason-error"/>
                  <div id="reason-error" aria-live="polite">
                   {submitState.errors?.reason && <p className="text-sm font-medium text-destructive mt-1">{submitState.errors.reason[0]}</p>}
                 </div>
