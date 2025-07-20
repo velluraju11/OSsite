@@ -1,17 +1,18 @@
 
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from 'react';
+import { useActionState, useEffect, useRef, useState, useCallback } from 'react';
 import { useFormStatus } from 'react-dom';
 import { useToast } from "@/hooks/use-toast"
 import { submitInterestForm } from '@/app/actions';
+import { isUsernameTaken, isEmailTaken, isMobileTaken } from '@/app/actions/validate';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, ShieldCheck, MailCheck, Send } from 'lucide-react';
+import { Loader2, ShieldCheck, MailCheck, Send, CheckCircle, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
@@ -24,15 +25,43 @@ const initialSubmitState = {
   reset: false,
 };
 
-function SubmitButton({ isEmailVerified }: { isEmailVerified: boolean }) {
+function SubmitButton({ isEmailVerified, isFormValid }: { isEmailVerified: boolean, isFormValid: boolean }) {
   const { pending } = useFormStatus();
 
   return (
-    <Button type="submit" className="w-full text-lg py-6 glow-shadow" disabled={pending || !isEmailVerified}>
+    <Button type="submit" className="w-full text-lg py-6 glow-shadow" disabled={pending || !isEmailVerified || !isFormValid}>
       {pending ? <Loader2 className="animate-spin" /> : 'Join the Waitlist'}
     </Button>
   );
 }
+
+const FieldValidationStatus = ({ status, checkingText, takenText, availableText }: { status: 'idle' | 'checking' | 'taken' | 'available' | 'invalid', checkingText: string, takenText: string, availableText: string }) => {
+    if (status === 'checking') {
+        return <p className="text-sm text-muted-foreground mt-1 flex items-center"><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {checkingText}</p>;
+    }
+    if (status === 'taken') {
+        return <p className="text-sm font-medium text-destructive mt-1 flex items-center"><XCircle className="w-4 h-4 mr-2" /> {takenText}</p>;
+    }
+    if (status === 'available') {
+        return <p className="text-sm font-medium text-green-500 mt-1 flex items-center"><CheckCircle className="w-4 h-4 mr-2" /> {availableText}</p>;
+    }
+    return null;
+};
+
+// Custom hook for debouncing
+function useDebounce(callback: (...args: any[]) => void, delay: number) {
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    return useCallback((...args: any[]) => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
+        timeoutRef.current = setTimeout(() => {
+            callback(...args);
+        }, delay);
+    }, [callback, delay]);
+}
+
 
 export function ContactForm() {
   const [submitState, submitFormAction, isSubmitPending] = useActionState(submitInterestForm, initialSubmitState);
@@ -41,15 +70,58 @@ export function ContactForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const [showOtherDesignation, setShowOtherDesignation] = useState(false);
   
-  const [email, setEmail] = useState('');
+  // Email verification state
+  const [emailForVerification, setEmailForVerification] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [emailVerified, setEmailVerified] = useState(false);
   const [emailVerificationError, setEmailVerificationError] = useState('');
   const [isVerifying, setIsVerifying] = useState(true);
 
+  // Field values
   const [username, setUsername] = useState('');
-  const [isUsernameValid, setIsUsernameValid] = useState(true);
+  const [email, setEmail] = useState('');
+  const [mobile, setMobile] = useState('');
+  
+  // Real-time validation state
+  const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'taken' | 'available' | 'invalid'>('idle');
+  const [emailStatus, setEmailStatus] = useState<'idle' | 'checking' | 'taken' | 'available' | 'invalid'>('idle');
+  const [mobileStatus, setMobileStatus] = useState<'idle' | 'checking' | 'taken' | 'available' | 'invalid'>('idle');
+
+
+  const debouncedCheckUsername = useDebounce(async (value: string) => {
+    if (value.length < 3) {
+      setUsernameStatus('idle');
+      return;
+    }
+    setUsernameStatus('checking');
+    const taken = await isUsernameTaken(value);
+    setUsernameStatus(taken ? 'taken' : 'available');
+  }, 500);
+
+  const debouncedCheckEmail = useDebounce(async (value: string) => {
+    if (!/^\S+@\S+\.\S+$/.test(value)) {
+        setEmailStatus('idle');
+        return;
+    }
+    if (value === emailForVerification && emailVerified) {
+        setEmailStatus('available');
+        return;
+    }
+    setEmailStatus('checking');
+    const taken = await isEmailTaken(value);
+    setEmailStatus(taken ? 'taken' : 'available');
+  }, 500);
+
+  const debouncedCheckMobile = useDebounce(async (value: string) => {
+    if (value.length < 10) {
+        setMobileStatus('idle');
+        return;
+    }
+    setMobileStatus('checking');
+    const taken = await isMobileTaken(value);
+    setMobileStatus(taken ? 'taken' : 'available');
+  }, 500);
   
   useEffect(() => {
     const app = getFirebaseApp();
@@ -70,7 +142,9 @@ export function ContactForm() {
       signInWithEmailLink(auth, savedEmail, window.location.href)
         .then(() => {
           setEmailVerified(true);
-          setEmail(savedEmail as string);
+          setEmail(savedEmail);
+          setEmailForVerification(savedEmail);
+          setEmailStatus('available');
           toast({
             title: "Verified",
             description: "Your email has been successfully verified.",
@@ -116,10 +190,14 @@ export function ContactForm() {
           formRef.current?.reset();
           setShowOtherDesignation(false);
           setEmail('');
+          setEmailForVerification('');
           setEmailSent(false);
           setEmailVerified(false);
           setUsername('');
-          setIsUsernameValid(true);
+          setMobile('');
+          setUsernameStatus('idle');
+          setEmailStatus('idle');
+          setMobileStatus('idle');
       }
     }
   }, [submitState, isSubmitPending, toast]);
@@ -129,16 +207,35 @@ export function ContactForm() {
     setUsername(value);
     const regex = /^[a-zA-Z0-9]*$/;
     if (regex.test(value)) {
-      setIsUsernameValid(true);
+      setUsernameStatus('idle');
+      debouncedCheckUsername(value);
     } else {
-      setIsUsernameValid(false);
+      setUsernameStatus('invalid');
     }
   };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setEmail(value);
+    setEmailStatus('idle');
+    debouncedCheckEmail(value);
+  }
+
+  const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setMobile(value);
+    setMobileStatus('idle');
+    debouncedCheckMobile(value);
+  }
 
   const handleSendVerificationEmail = async () => {
     setEmailVerificationError('');
     if (!email) {
       setEmailVerificationError('Please enter your email address.');
+      return;
+    }
+    if (emailStatus === 'taken') {
+      setEmailVerificationError('This email is already on the waitlist.');
       return;
     }
     
@@ -158,6 +255,7 @@ export function ContactForm() {
     try {
       await sendSignInLinkToEmail(auth, email, actionCodeSettings);
       window.localStorage.setItem('emailForSignIn', email);
+      setEmailForVerification(email);
       setEmailSent(true);
       toast({
         title: 'Verification link sent',
@@ -177,6 +275,9 @@ export function ContactForm() {
         setIsSendingEmail(false);
     }
   };
+
+  const isFormValid = usernameStatus === 'available' && emailStatus === 'available' && mobileStatus === 'available';
+
 
   if (isVerifying) {
     return (
@@ -204,7 +305,7 @@ export function ContactForm() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-             {submitState?.errors && Object.keys(submitState.errors).length > 0 && (
+             {submitState?.errors && Object.keys(submitState.errors).length > 0 && !isSubmitPending &&(
               <Alert variant="destructive" className="mb-4">
                 <Terminal className="h-4 w-4" />
                 <AlertTitle>Heads up!</AlertTitle>
@@ -229,15 +330,18 @@ export function ContactForm() {
                   name="username" 
                   placeholder="Choose a unique username" 
                   required 
-                  aria-describedby="username-error" 
+                  aria-describedby="username-error username-status" 
                   value={username}
                   onChange={handleUsernameChange}
-                  className={cn(!isUsernameValid || submitState.errors?.username ? 'border-destructive focus-visible:ring-destructive' : '')}
+                  className={cn( (submitState.errors?.username || usernameStatus === 'taken' || usernameStatus === 'invalid') && 'border-destructive focus-visible:ring-destructive')}
                 />
                  <p className="text-sm text-muted-foreground mt-1">This will be your unique identifier. Only letters and numbers are allowed.</p>
                 <div id="username-error" aria-live="polite">
                   {submitState.errors?.username && <p className="text-sm font-medium text-destructive mt-1">{submitState.errors.username[0]}</p>}
-                  {!isUsernameValid && <p className="text-sm font-medium text-destructive mt-1">Username can only contain letters and numbers.</p>}
+                   {usernameStatus === 'invalid' && <p className="text-sm font-medium text-destructive mt-1">Username can only contain letters and numbers.</p>}
+                </div>
+                <div id="username-status" aria-live="polite">
+                    <FieldValidationStatus status={usernameStatus} checkingText="Checking username..." takenText="Username is already taken." availableText="Username is available." />
                 </div>
               </div>
 
@@ -250,17 +354,17 @@ export function ContactForm() {
                         type="email" 
                         placeholder="ada@newera.com" 
                         required 
-                        aria-describedby="email-error"
+                        aria-describedby="email-error email-status"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={handleEmailChange}
                         readOnly={emailSent || emailVerified}
-                        className={cn(emailVerified && 'pl-8 border-green-500 focus-visible:ring-green-500')}
+                        className={cn(emailVerified && 'pl-8 border-green-500 focus-visible:ring-green-500', (submitState.errors?.email || emailStatus === 'taken') && 'border-destructive focus-visible:ring-destructive')}
                     />
                     {emailVerified && <ShieldCheck className="w-4 h-4 text-green-500 absolute left-2 top-1/2 -translate-y-1/2" />}
                  </div>
                  
                  {!emailVerified && !emailSent && (
-                    <Button type="button" onClick={handleSendVerificationEmail} disabled={isSendingEmail} className="w-full mt-2">
+                    <Button type="button" onClick={handleSendVerificationEmail} disabled={isSendingEmail || emailStatus !== 'available'} className="w-full mt-2">
                         {isSendingEmail ? <Loader2 className="animate-spin" /> : <Send />}
                         <span className="ml-2">Verify Email</span>
                     </Button>
@@ -270,6 +374,9 @@ export function ContactForm() {
                  <div id="email-error" aria-live="polite">
                     {submitState.errors?.email && <p className="text-sm font-medium text-destructive mt-1">{submitState.errors.email[0]}</p>}
                     {emailVerificationError && !emailVerified && <p className="text-sm font-medium text-destructive mt-1">{emailVerificationError}</p>}
+                 </div>
+                 <div id="email-status" aria-live="polite">
+                    <FieldValidationStatus status={emailStatus} checkingText="Checking email..." takenText="Email is already on the waitlist." availableText="Email is available to use." />
                  </div>
               </div>
               
@@ -285,10 +392,23 @@ export function ContactForm() {
 
               <div>
                 <Label htmlFor="mobile">Mobile Number</Label>
-                <Input id="mobile" name="mobile" type="tel" placeholder="+1 (555) 123-4567" required aria-describedby="mobile-error" />
+                <Input 
+                  id="mobile" 
+                  name="mobile" 
+                  type="tel" 
+                  placeholder="+1 (555) 123-4567" 
+                  required 
+                  aria-describedby="mobile-error mobile-status"
+                  value={mobile}
+                  onChange={handleMobileChange}
+                  className={cn((submitState.errors?.mobile || mobileStatus === 'taken') && 'border-destructive focus-visible:ring-destructive')}
+                />
                 <p className="text-sm text-muted-foreground mt-1">Helps us prioritize based on geolocation.</p>
                  <div id="mobile-error" aria-live="polite">
                   {submitState.errors?.mobile && <p className="text-sm font-medium text-destructive mt-1">{submitState.errors.mobile[0]}</p>}
+                </div>
+                 <div id="mobile-status" aria-live="polite">
+                    <FieldValidationStatus status={mobileStatus} checkingText="Checking mobile number..." takenText="Mobile number is already on the waitlist." availableText="Mobile number is available." />
                 </div>
               </div>
 
@@ -340,8 +460,9 @@ export function ContactForm() {
                 </div>
               </div>
 
-              <SubmitButton isEmailVerified={emailVerified} />
+              <SubmitButton isEmailVerified={emailVerified} isFormValid={isFormValid} />
                {!emailVerified && <p className="text-center text-sm text-muted-foreground">Please verify your email to join the waitlist.</p>}
+               {emailVerified && !isFormValid && <p className="text-center text-sm text-muted-foreground">Please ensure all fields are valid and available before submitting.</p>}
             </form>
           </CardContent>
         </Card>
