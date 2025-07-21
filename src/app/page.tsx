@@ -6,6 +6,7 @@ import { WhoWeServe } from '@/components/landing/who-we-serve';
 import { ContactForm } from '@/components/landing/contact-form';
 import { Footer } from '@/components/landing/footer';
 import { ScrollAnimation } from '@/components/scroll-animation';
+import { AiDemo } from '@/components/landing/ai-demo';
 
 export default function Home() {
   return (
@@ -14,6 +15,9 @@ export default function Home() {
         <Header />
         <ScrollAnimation>
           <Features />
+        </ScrollAnimation>
+        <ScrollAnimation>
+          <AiDemo />
         </ScrollAnimation>
         <ScrollAnimation>
           <WhatRyhaBuilds />
